@@ -1,0 +1,15 @@
+/* Global Stylesheet for NeoBank Portal */
+:root {
+  --primary-navy: #0F172A;
+  --accent-blue: #2563EB;
+  --bg-slate: #F8FAFC;
+  --text-dark: #1E293B;
+  --border-color: #E2E8F0;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background-color: var(--bg-slate);
+  color: var(--text-dark);
+}
