@@ -1,19 +1,46 @@
-/**
- * ============================================================================
- * COMPONENT: ProtectedRoute.tsx
- * DESCRIPTION: Route guard ensuring authenticated access and role authorization checks.
- * ----------------------------------------------------------------------------
- * FEATURE OWNER: R01 - Mubina HVR
- * EMAIL: mubina.hvr@gmail.com
- * ROLE: Frontend foundation, security and integration lead
- * PRD REQUIREMENTS: BNK-FR-07 (Security & Timeout), System Architecture Foundation
- * SPRINT DELIVERABLES: Sprint 1 (S1-01, S1-02, S1-03, S1-04) & Sprint 2 (S2-01, S2-02, S2-03, S2-04)
- * PRIMARY RESPONSIBILITIES: Shared shell, navigation, session timeout, virtual keyboard, common states, integration support
- * ============================================================================
- */
+import React from "react";
+import { Navigate, useLocation } from "react-router-dom";
+import type { UserRole } from "../features/auth/auth.types";
 
-import React from 'react';
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+  role?: UserRole;
+}
 
-export const ProtectedRoute: React.FC<{ children: React.ReactNode; role?: string }> = ({ children }) => {
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+  children,
+  role,
+}) => {
+  const location = useLocation();
+
+  const accessToken = sessionStorage.getItem("accessToken");
+  const userData = sessionStorage.getItem("user");
+
+  if (!accessToken || !userData) {
+    return (
+      <Navigate
+        to="/login"
+        replace
+        state={{ from: location.pathname }}
+      />
+    );
+  }
+
+  let user;
+
+  try {
+    user = JSON.parse(userData);
+  } catch {
+    sessionStorage.removeItem("accessToken");
+    sessionStorage.removeItem("refreshToken");
+    sessionStorage.removeItem("user");
+
+    return <Navigate to="/login" replace />;
+  }
+
+  if (role && user.role !== role) {
+    return <Navigate to="/unauthorized" replace />;
+  }
+
   return <>{children}</>;
 };
