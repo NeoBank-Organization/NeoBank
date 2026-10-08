@@ -14,8 +14,31 @@
 
 import React from 'react';
 
-export const AccountsDashboard: React.FC<any> = () => {
+export const AccountsDashboard: React.FC = () => {
   return (
-    <div></div>
+    <section className="mx-auto max-w-6xl space-y-6">
+      <header>
+        <p className="text-sm font-medium text-blue-700">Your finances</p>
+        <h1 className="mt-1 text-2xl font-bold text-slate-900">
+          Accounts overview
+        </h1>
+        <p className="mt-2 text-sm text-slate-600">
+          View your accounts and balances in one place.
+        </p>
+      </header>
+
+      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-xl text-blue-700">
+          ▣
+        </div>
+        <h2 className="mt-4 text-lg font-semibold text-slate-900">
+          No account details to display
+        </h2>
+        <p className="mt-2 max-w-xl text-sm leading-6 text-slate-600">
+          Your account information isn’t available yet. Once account data is
+          connected, your balances and account details will appear here.
+        </p>
+      </div>
+    </section>
   );
 };

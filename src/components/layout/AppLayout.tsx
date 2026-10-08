@@ -60,12 +60,12 @@ export const AppLayout: React.FC = () => {
     },
     {
       label: "Fund Transfer",
-      path: "/transfer",
+      path: "/transfers",
       icon: "➤",
     },
     {
       label: "Scheduled Transfers",
-      path: "/scheduled-transfers",
+      path: "/transfers/scheduled",
       icon: "□",
     },
     {
@@ -80,7 +80,12 @@ export const AppLayout: React.FC = () => {
     },
     {
       label: "Spend Insights",
-      path: "/spend-insights",
+      path: "/accounts/spend-insights",
+      icon: "◔",
+    },
+    {
+      label: "Admin Dashboard",
+      path: "/admin",
       icon: "◔",
     },
   ];
@@ -196,12 +201,18 @@ export const AppLayout: React.FC = () => {
 
           <div className="space-y-0.5">
 
-            {menuItems.map((item) => (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                className={({ isActive }) =>
-                  `
+            {menuItems
+              .filter((item) =>
+                user?.role === "ADMIN"
+                  ? item.path === "/admin"
+                  : item.path !== "/admin"
+              )
+              .map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    `
                     group
                     relative
                     flex
@@ -221,10 +232,10 @@ export const AppLayout: React.FC = () => {
                         : "text-blue-100/70 hover:bg-white/[0.06] hover:text-white"
                     }
                   `
-                }
-              >
-                {({ isActive }) => (
-                  <>
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
 
                     {/* Active indicator */}
 
@@ -269,10 +280,10 @@ export const AppLayout: React.FC = () => {
                       {item.label}
                     </span>
 
-                  </>
-                )}
-              </NavLink>
-            ))}
+                    </>
+                  )}
+                </NavLink>
+              ))}
 
           </div>
 
@@ -602,7 +613,7 @@ export const AppLayout: React.FC = () => {
                     text-gray-400
                   "
                 >
-                  Customer
+                  {user?.role === "ADMIN" ? "Admin" : "Customer"}
                 </p>
 
               </div>
