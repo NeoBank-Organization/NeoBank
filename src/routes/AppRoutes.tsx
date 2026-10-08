@@ -28,7 +28,7 @@ import { StatementsDashboard } from "../features/scheduling-statements/Statement
 import { LoanApplicationForm } from "../features/loans/LoanApplicationForm";
 import { EMICalculator } from "../features/loans/EMICalculator";
 
-import { BranchAdminDashboard } from "../features/branch-admin/BranchAdminDashboard";
+import BranchAdminDashboard from "../features/branch-admin/BranchAdminDashboard";
 import { UATScenarioRunner } from "../features/integration-uat/UATScenarioRunner";
 
 export const AppRoutes: React.FC = () => {
