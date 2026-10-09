@@ -3,7 +3,7 @@
  * COMPONENT: ActivationCoolingBanner.tsx
  * DESCRIPTION: Cooling period policy notification banner restricting immediate high-value transfers.
  * ----------------------------------------------------------------------------
- * FEATURE OWNER: R03 - Poorvi K
+ * FEATURE OWNER: R03 - Poorvika N
  * EMAIL: poorvipoorvikan@gmail.com
  * ROLE: Beneficiary feature owner
  * PRD REQUIREMENTS: BNK-FR-02 (Beneficiaries), BNK-AI-04 (KYC Document Check)
@@ -12,10 +12,33 @@
  * ============================================================================
  */
 
-import React from 'react';
+import React,{useEffect,useState} from 'react';
 
-export const ActivationCoolingBanner: React.FC<any> = () => {
-  return (
-    <div></div>
+interface ActivationCoolingBannerProps{
+  activationTime:string;
+}
+
+export const ActivationCoolingBanner:React.FC<ActivationCoolingBannerProps>=({activationTime})=>{
+  const getRemaining=()=>{
+    return Math.max(0,new Date(activationTime).getTime()-Date.now());
+  };
+
+  const [remaining,setRemaining]=useState(getRemaining);
+
+  useEffect(()=>{
+    const timer=setInterval(()=>setRemaining(getRemaining()),1000);
+    return()=>clearInterval(timer);
+  },[activationTime]);
+
+  if(remaining<=0)return null;
+
+  const totalSeconds=Math.floor(remaining/1000);
+  const minutes=Math.floor(totalSeconds/60);
+  const seconds=totalSeconds%60;
+
+  return(
+    <div className="mt-2 rounded-md bg-amber-50 px-2.5 py-1.5 text-[11px] font-medium text-amber-600">
+      Cooling period: {minutes}:{seconds.toString().padStart(2,'0')} remaining
+    </div>
   );
 };
