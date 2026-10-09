@@ -1,5 +1,16 @@
 @import "tailwindcss";
 
+/* ==========================================================================
+   NEOBANK REUSABLE DESIGN SYSTEM & COMPONENT CLASSES
+   Centralized in index.css for strict modularity and zero inline styles.
+   ========================================================================== */
+
+:root {
+  --primary-navy: #0F172A;
+  --accent-blue: #2563EB;
+  --bg-slate: #F8FAFC;
+  --text-dark: #1E293B;
+  --border-color: #E2E8F0;
 * {
   box-sizing: border-box;
 }
@@ -8,6 +19,561 @@ html,
 body,
 #root {
   margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg-slate);
+  color: var(--text-dark);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ==========================================================================
+   PAGE LAYOUT & HEADERS
+   ========================================================================== */
+.nb-page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.nb-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.nb-page-title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  color: #0F172A;
+  letter-spacing: -0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nb-page-subtitle {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: #64748B;
+}
+
+.nb-badge-prd {
+  background-color: #EEF2FF;
+  color: #4338CA;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 12px;
+  border: 1px solid #C7D2FE;
+}
+
+/* ==========================================================================
+   TOP BAR ACTION BUTTONS (SPEND INSIGHTS AI & REFRESH)
+   ========================================================================== */
+.nb-btn-spend-ai {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #F0FDF4;
+  color: #166534;
+  border: 1px solid #BBF7D0;
+  padding: 9px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.nb-btn-spend-ai:hover {
+  background-color: #DCFCE7;
+  border-color: #86EFAC;
+}
+
+.nb-btn-refresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #FFFFFF;
+  color: #1E293B;
+  border: 1px solid #CBD5E1;
+  padding: 9px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.nb-btn-refresh:hover:not(:disabled) {
+  background-color: #F8FAFC;
+  border-color: #94A3B8;
+}
+
+.nb-btn-refresh:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ==========================================================================
+   PORTFOLIO KPI SUMMARY CARDS
+   ========================================================================== */
+.nb-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.nb-kpi-card {
+  background-color: #FFFFFF;
+  border-radius: 16px;
+  padding: 18px 20px;
+  border: 1px solid #E2E8F0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.2s ease;
+}
+
+.nb-kpi-card:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.nb-kpi-card-dark {
+  background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+  color: #FFFFFF;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.nb-kpi-label {
+  font-size: 12px;
+  color: #64748B;
+  font-weight: 600;
+}
+
+.nb-kpi-label-dark {
+  font-size: 12px;
+  color: #94A3B8;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.nb-kpi-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1E293B;
+  margin-top: 8px;
+}
+
+.nb-kpi-value-dark {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin-top: 6px;
+}
+
+.nb-kpi-subtext {
+  font-size: 11px;
+  color: #94A3B8;
+  margin-top: 4px;
+}
+
+.nb-kpi-subtext-dark {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  font-size: 11px;
+  color: #CBD5E1;
+}
+
+/* ==========================================================================
+   ACCOUNT CARD (EXACT PREVIOUS PREMIUM FINTECH DESIGN)
+   ========================================================================== */
+.nb-account-card {
+  background-color: #FFFFFF;
+  border-radius: 16px;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.nb-account-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+}
+
+.nb-account-card-header {
+  padding: 16px 20px;
+  color: #FFFFFF;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nb-account-card-header-savings {
+  background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
+}
+
+.nb-account-card-header-current {
+  background: linear-gradient(135deg, #064E3B 0%, #059669 100%);
+}
+
+.nb-account-card-header-fd {
+  background: linear-gradient(135deg, #4C1D95 0%, #7C3AED 100%);
+}
+
+.nb-account-card-icon-box {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nb-account-card-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  line-height: 1.2;
+}
+
+.nb-account-card-subtitle {
+  font-size: 11px;
+  opacity: 0.85;
+  font-weight: 500;
+  display: block;
+}
+
+.nb-badge-primary-pill {
+  background-color: rgba(255, 255, 255, 0.25);
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 12px;
+}
+
+.nb-badge-status-pill {
+  background-color: #10B981;
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.nb-account-card-body {
+  padding: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.nb-account-mask-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #F8FAFC;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #F1F5F9;
+}
+
+.nb-account-mask-label {
+  font-size: 11px;
+  color: #64748B;
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.nb-account-mask-val {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1E293B;
+  font-family: monospace;
+}
+
+.nb-account-mask-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #64748B;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+  transition: color 0.15s ease;
+}
+
+.nb-account-mask-btn:hover {
+  color: #1E293B;
+}
+
+.nb-account-bal-label {
+  font-size: 12px;
+  color: #64748B;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.nb-account-bal-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: #0F172A;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+
+.nb-account-bal-ledger {
+  font-size: 12px;
+  color: #94A3B8;
+  margin-top: 2px;
+}
+
+.nb-account-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  font-size: 12px;
+}
+
+.nb-account-meta-box {
+  background-color: #F8FAFC;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #F1F5F9;
+}
+
+.nb-account-meta-label {
+  color: #64748B;
+  display: block;
+  font-size: 10px;
+  margin-bottom: 2px;
+}
+
+.nb-account-meta-val-primary {
+  color: #1E293B;
+  font-size: 12px;
+  font-weight: 700;
+  display: block;
+}
+
+.nb-account-meta-val-accent {
+  color: #7C3AED;
+  font-size: 13px;
+  font-weight: 700;
+  display: block;
+}
+
+.nb-account-meta-val-text {
+  color: #334155;
+  font-size: 11px;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nb-account-card-footer {
+  border-top: 1px solid #F1F5F9;
+  padding: 12px 20px;
+  background-color: #FAFAFA;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nb-btn-transfer {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #2563EB;
+  background-color: #EFF6FF;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.nb-btn-transfer:hover {
+  background-color: #DBEAFE;
+}
+
+.nb-btn-statement {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #475569;
+  background-color: #F1F5F9;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.nb-btn-statement:hover {
+  background-color: #E2E8F0;
+}
+
+.nb-btn-view-details {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: #0F172A;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 0;
+  transition: color 0.15s ease;
+}
+
+.nb-btn-view-details:hover {
+  color: #2563EB;
+}
+
+/* ==========================================================================
+   FILTER TABS & PILLS
+   ========================================================================== */
+.nb-filter-bar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.nb-filter-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 24px;
+  border: 1px solid #E2E8F0;
+  background-color: #FFFFFF;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.nb-filter-pill:hover {
+  background-color: #F8FAFC;
+  border-color: #CBD5E1;
+}
+
+.nb-filter-pill-active {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 24px;
+  border: 1px solid #2563EB;
+  background-color: #2563EB;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.nb-pill-badge {
+  background-color: #F1F5F9;
+  color: #64748B;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 10px;
+}
+
+.nb-pill-badge-active {
+  background-color: rgba(255, 255, 255, 0.25);
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 10px;
+}
+
+/* ==========================================================================
+   LIFECYCLE STATES (SKELETON, ERROR, EMPTY)
+   ========================================================================== */
+.nb-skeleton-card {
+  background-color: #FFFFFF;
+  border-radius: 16px;
+  border: 1px solid #E2E8F0;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: nb-pulse 1.5s infinite ease-in-out;
+}
+
+.nb-skeleton-bar {
+  background-color: #E2E8F0;
+  border-radius: 4px;
+}
+
+.nb-error-container {
+  background-color: #FEF2F2;
+  border-radius: 16px;
+  border: 1px solid #FCA5A5;
+  padding: 36px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.nb-empty-container {
+  background-color: #FFFFFF;
+  border-radius: 12px;
+  border: 1px dashed #CBD5E1;
+  padding: 40px 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+@keyframes nb-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
   min-height: 100%;
 }
 
