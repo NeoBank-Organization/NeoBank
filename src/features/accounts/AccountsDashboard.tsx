@@ -87,9 +87,7 @@ export const AccountsDashboard: React.FC = () => {
             <h1 className="nb-page-title">
               Accounts & Balances
             </h1>
-            <span className="nb-badge-prd">
-              BNK-FR-01
-            </span>
+           
           </div>
           <p className="nb-page-subtitle">
             Consolidated overview of your Savings, Current, and Fixed Deposit accounts.
