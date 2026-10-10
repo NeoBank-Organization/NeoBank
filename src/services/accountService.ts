@@ -88,7 +88,7 @@ export const getAccountTransactions = async (accountId: string): Promise<Transac
   const body: ApiResponse<TransactionItem[]> = await res.json();
   return body.data;
 };
-
+// Added by Prashanth
 /**
  * Alias for getAccountSummary aligning with GET /api/v1/accounts/{accountId}
  */
