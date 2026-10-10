@@ -32,6 +32,15 @@ export interface AccountSummary {
   branchName: string;
   ifscCode: string;
   isPrimary?: boolean;
+  micrCode?: string;
+  openedDate?: string;
+  dailyTransferLimit?: number;
+  usedDailyLimit?: number;
+  upiDailyLimit?: number;
+  atmLimit?: number;
+  posLimit?: number;
+  nomineeName?: string;
+  nomineeRegistered?: boolean;
 }
 
 export type TransactionType = 'DEBIT' | 'CREDIT';

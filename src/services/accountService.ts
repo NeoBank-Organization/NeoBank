@@ -88,3 +88,38 @@ export const getAccountTransactions = async (accountId: string): Promise<Transac
   const body: ApiResponse<TransactionItem[]> = await res.json();
   return body.data;
 };
+// Added by Prashanth
+/**
+ * Alias for getAccountSummary aligning with GET /api/v1/accounts/{accountId}
+ */
+export const getAccountById = getAccountSummary;
+
+/**
+ * Search transaction records for an account
+ * Microservice: customer-account-service -> GET /api/v1/accounts/{accountId}/transactions/search
+ */
+export const searchAccountTransactions = async (
+  accountId: string,
+  query: string
+): Promise<TransactionItem[]> => {
+  if (USE_MOCK) {
+    await delay(300);
+    const all = mockTransactions[accountId] || [];
+    if (!query.trim()) return all;
+    const q = query.toLowerCase();
+    return all.filter(
+      (tx) =>
+        tx.description.toLowerCase().includes(q) ||
+        tx.referenceNumber.toLowerCase().includes(q) ||
+        tx.category.toLowerCase().includes(q)
+    );
+  }
+
+  const res = await fetch(`${API_BASE_URL}/accounts/${accountId}/transactions/search?q=${encodeURIComponent(query)}`, {
+    method: 'GET',
+    headers: getHeaders()
+  });
+  if (!res.ok) throw new Error(`Server returned error: ${res.status}`);
+  const body: ApiResponse<TransactionItem[]> = await res.json();
+  return body.data;
+};
