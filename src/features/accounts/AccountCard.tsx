@@ -12,20 +12,19 @@
  * ============================================================================
  */
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Wallet, 
-  Building2, 
-  TrendingUp, 
-  Eye, 
-  EyeOff, 
-  ArrowRight, 
-  CheckCircle2, 
-  Send, 
-  FileText 
+import {
+  Wallet,
+  Building2,
+  TrendingUp,
+  ArrowRight,
+  CheckCircle2,
+  Send,
+  FileText
 } from 'lucide-react';
 import { AccountSummary } from '../../types/account.types';
+import { AccountMasking } from './AccountMasking';
 
 interface AccountCardProps {
   account: AccountSummary;
@@ -33,7 +32,6 @@ interface AccountCardProps {
 
 export const AccountCard: React.FC<AccountCardProps> = ({ account }) => {
   const navigate = useNavigate();
-  const [showFullNumber, setShowFullNumber] = useState(false);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -107,24 +105,16 @@ export const AccountCard: React.FC<AccountCardProps> = ({ account }) => {
 
       {/* Card Body */}
       <div className="nb-account-card-body">
-        {/* Account Number & Masking Toggle */}
+        {/* Account Number & Masking Component */}
         <div className="nb-account-mask-box">
-          <div>
-            <span className="nb-account-mask-label">
-              Account Number
-            </span>
-            <span className="nb-account-mask-val">
-              {showFullNumber ? account.accountNumber : account.maskedAccountNumber}
-            </span>
-          </div>
-          <button
-            onClick={() => setShowFullNumber(!showFullNumber)}
-            className="nb-account-mask-btn"
-            title={showFullNumber ? "Mask account number" : "Reveal account number"}
-            type="button"
-          >
-            {showFullNumber ? <EyeOff size={16} /> : <Eye size={16} />}
-          </button>
+          <AccountMasking
+            accountNumber={account.accountNumber}
+            maskedAccountNumber={account.maskedAccountNumber}
+            showLabel={true}
+            showCopy={true}
+            size="sm"
+            className="w-full"
+          />
         </div>
 
         {/* Balance Display */}
