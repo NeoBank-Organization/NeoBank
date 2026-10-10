@@ -12,10 +12,14 @@
  * ============================================================================
  */
 
-import React from 'react';
+import React from "react";
 
-export const StaleRecordNotice: React.FC<any> = () => {
+const StaleRecordNotice: React.FC = () => {
   return (
-    <div></div>
+    <div className="alert alert-warning mt-3">
+      ⚠️ Some records are stale. Please refresh the dashboard.
+    </div>
   );
 };
+
+export default StaleRecordNotice;

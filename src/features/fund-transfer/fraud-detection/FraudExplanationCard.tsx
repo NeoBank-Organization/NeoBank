@@ -1,21 +1,9 @@
-/**
- * ============================================================================
- * COMPONENT: FraudExplanationCard.tsx
- * DESCRIPTION: BNK-AI-01: AI explanation card listing factors contributing to high risk evaluation.
- * ----------------------------------------------------------------------------
- * FEATURE OWNER: R04 - Prashanth K
- * EMAIL: prashanth.k1517@gmail.com
- * ROLE: Fund Transfer feature owner
- * PRD REQUIREMENTS: BNK-FR-03 (Fund Transfer), BNK-AI-01 (Fraud Detection)
- * SPRINT DELIVERABLES: Sprint 1 (S1-12, S1-13, S1-14, S1-15) & Sprint 2 (S2-12, S2-13, S2-14)
- * PRIMARY RESPONSIBILITIES: Transfer forms, own/other-bank flows, validations, transaction summary, AI fraud detection
- * ============================================================================
- */
+import { Info, CheckCircle2 } from 'lucide-react';
+import type { RiskLevel } from '../transfer.types';
 
-import React from 'react';
-
-export const FraudExplanationCard: React.FC<any> = () => {
-  return (
-    <div></div>
-  );
-};
+export const FraudExplanationCard = ({ level, factors }: { level: RiskLevel; factors: string[] }) => (
+  <div className="rounded-xl border border-slate-200 bg-white p-4">
+    <div className="flex items-start gap-3"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-blue-50 text-blue-600"><Info size={16}/></span><div><h3 className="text-xs font-semibold text-slate-800">Transfer safety check</h3><p className="mt-1 text-[11px] leading-5 text-slate-500">{level === 'LOW' ? 'This transfer matches your usual activity.' : level === 'MEDIUM' ? 'A few details need an extra look before you send.' : 'This transfer needs a quick identity check to help keep your account safe.'}</p></div></div>
+    {factors.length > 0 && <ul className="mt-3 space-y-2 border-t border-slate-100 pt-3">{factors.map((factor) => <li key={factor} className="flex items-start gap-2 text-[11px] text-slate-600"><CheckCircle2 size={14} className="mt-0.5 shrink-0 text-slate-400"/>{factor}</li>)}</ul>}
+  </div>
+);
