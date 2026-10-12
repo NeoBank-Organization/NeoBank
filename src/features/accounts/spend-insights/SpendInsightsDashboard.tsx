@@ -16,6 +16,13 @@ import React from 'react';
 
 export const SpendInsightsDashboard: React.FC<any> = () => {
   return (
-    <div></div>
+    <div>
+      <h1 className="text-center text-3xl font-bold">Spend Insights Dashboard under development...</h1>
+      <img
+  src="https://cdn.dribbble.com/userupload/24884219/file/original-04ff893943562acc117d03baeb087405.gif"
+  alt=""
+  className="w-screen h-screen object-cover"
+/>
+    </div>
   );
 };
