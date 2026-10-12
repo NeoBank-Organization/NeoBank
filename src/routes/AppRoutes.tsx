@@ -26,11 +26,12 @@ import { TransferForm } from "../features/fund-transfer/TransferForm";
 import { ScheduledTransfersList } from "../features/scheduling-statements/ScheduledTransfersList";
 import { StatementsDashboard } from "../features/scheduling-statements/StatementsDashboard";
 
-import { LoanApplicationForm } from "../features/loans/LoanApplicationForm";
+
 import { EMICalculator } from "../features/loans/EMICalculator";
 
-import BranchAdminDashboard from "../features/branch-admin/BranchAdminDashboard";
+import  BranchAdminDashboard  from "../features/branch-admin/BranchAdminDashboard";
 import { UATScenarioRunner } from "../features/integration-uat/UATScenarioRunner";
+import LoanPage from "../features/loans/LoanPage";
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -112,11 +113,9 @@ export const AppRoutes: React.FC = () => {
           />
 
           {/* Loans */}
+          <Route path="loans" element={<LoanPage />} />
+          <Route path="loans/emi-calculator" element={<EMICalculator />} />
 
-          <Route
-            path="/loans"
-            element={<LoanApplicationForm />}
-          />
 
           <Route
             path="/loans/emi-calculator"
@@ -152,6 +151,7 @@ export const AppRoutes: React.FC = () => {
             path="*"
             element={<Navigate to="/dashboard" replace />}
           />
+
         </Route>
       </Routes>
     </BrowserRouter>
