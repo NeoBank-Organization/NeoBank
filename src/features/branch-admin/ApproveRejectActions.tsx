@@ -12,10 +12,37 @@
  * ============================================================================
  */
 
-import React from 'react';
+import React, { useState } from "react";
+import RejectionReasonModal from "./RejectionReasonModal";
 
-export const ApproveRejectActions: React.FC<any> = () => {
+const ApproveRejectActions: React.FC<{ item: any }> = ({ item }) => {
+  const [showReject, setShowReject] = useState(false);
+
+  const handleApprove = () => {
+    alert(`Approved: ${JSON.stringify(item)}`);
+  };
+
   return (
-    <div></div>
+    <div className="mt-4 flex gap-2">
+      <button
+        type="button"
+        className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-800"
+        onClick={handleApprove}
+      >
+        Approve
+      </button>
+      <button
+        type="button"
+        className="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-50"
+        onClick={() => setShowReject(true)}
+      >
+        Reject
+      </button>
+      {showReject && (
+        <RejectionReasonModal item={item} onClose={() => setShowReject(false)} />
+      )}
+    </div>
   );
 };
+
+export default ApproveRejectActions;

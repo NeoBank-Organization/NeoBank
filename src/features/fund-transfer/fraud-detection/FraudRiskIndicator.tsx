@@ -1,21 +1,14 @@
-/**
- * ============================================================================
- * COMPONENT: FraudRiskIndicator.tsx
- * DESCRIPTION: BNK-AI-01: AI Risk Assessor component displaying LOW, MEDIUM, or HIGH risk score badge.
- * ----------------------------------------------------------------------------
- * FEATURE OWNER: R04 - Prashanth K
- * EMAIL: prashanth.k1517@gmail.com
- * ROLE: Fund Transfer feature owner
- * PRD REQUIREMENTS: BNK-FR-03 (Fund Transfer), BNK-AI-01 (Fraud Detection)
- * SPRINT DELIVERABLES: Sprint 1 (S1-12, S1-13, S1-14, S1-15) & Sprint 2 (S2-12, S2-13, S2-14)
- * PRIMARY RESPONSIBILITIES: Transfer forms, own/other-bank flows, validations, transaction summary, AI fraud detection
- * ============================================================================
- */
+import { ShieldCheck, ShieldAlert, Shield } from 'lucide-react';
+import type { RiskLevel } from '../transfer.types';
 
-import React from 'react';
+const config = {
+  LOW: { icon: ShieldCheck, style: 'bg-emerald-50 text-emerald-700 ring-emerald-200', label: 'Low risk' },
+  MEDIUM: { icon: Shield, style: 'bg-amber-50 text-amber-700 ring-amber-200', label: 'Review recommended' },
+  HIGH: { icon: ShieldAlert, style: 'bg-rose-50 text-rose-700 ring-rose-200', label: 'Additional verification' },
+};
 
-export const FraudRiskIndicator: React.FC<any> = () => {
-  return (
-    <div></div>
-  );
+export const FraudRiskIndicator = ({ level, score }: { level: RiskLevel; score: number }) => {
+  const item = config[level];
+  const Icon = item.icon;
+  return <div className={`flex items-center gap-2 rounded-lg px-3 py-2 ring-1 ${item.style}`}><Icon size={16}/><span className="text-xs font-semibold">{item.label}</span><span className="ml-auto text-[11px] font-medium">Risk score {score}/100</span></div>;
 };
