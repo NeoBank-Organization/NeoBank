@@ -13,41 +13,105 @@
  */
 
 import React, { useState } from "react";
-import LoanApprovalDetail from "./LoanApprovalDetail";
+import AccountApprovalDetail from "./AccountApprovalDetail";
+import type { ReviewStatus } from "./ApproveRejectActions";
+
+interface AccountApplication {
+  id: number;
+  name: string;
+  type: string;
+  branch: string;
+  submittedAt: string;
+  risk: "Low" | "Medium" | "High";
+  status?: ReviewStatus;
+  rejectionReason?: string;
+}
 
 const PendingAccountsList: React.FC = () => {
-  const [selected, setSelected] = useState<any | null>(null);
+  const [accounts, setAccounts] = useState<AccountApplication[]>([
+    {
+      id: 1,
+      name: "John Doe",
+      type: "Savings",
+      branch: "Aundh Branch",
+      submittedAt: "Today, 09:40 AM",
+      risk: "Low",
+    },
+    {
+      id: 2,
+      name: "Jane Smith",
+      type: "Current",
+      branch: "Koramangala Branch",
+      submittedAt: "Today, 11:10 AM",
+      risk: "Medium",
+    },
+  ]);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const selected = accounts.find((account) => account.id === selectedId) ?? null;
 
-  const accounts = [
-    { id: 1, name: "John Doe", type: "Savings" },
-    { id: 2, name: "Jane Smith", type: "Current" },
-  ];
+  const handleDecision = (status: ReviewStatus, reason: string) => {
+    if (selectedId === null) return;
+    setAccounts((current) =>
+      current.map((account) =>
+        account.id === selectedId
+          ? { ...account, status, rejectionReason: reason || undefined }
+          : account
+      )
+    );
+  };
+
+  const pendingCount = accounts.filter((account) => !account.status).length;
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 className="text-base font-semibold text-slate-900">Pending accounts</h2>
-      <p className="mt-1 text-sm text-slate-500">Select an application to review.</p>
+    <section className="rounded-xl border my-6 border-slate-200 bg-white p-5 shadow-sm">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h2 className="text-base font-semibold text-slate-900">Pending accounts</h2>
+          <p className="mt-1 text-sm text-slate-500">Select an application to review.</p>
+        </div>
+        <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700">
+          {pendingCount} queued
+        </span>
+      </div>
+
       <ul className="mt-4 divide-y divide-slate-100">
-        {accounts.map(acc => (
-          <li
-            key={acc.id}
-            className="py-1"
-          >
+        {accounts.map((acc) => (
+          <li key={acc.id} className="py-1">
             <button
               type="button"
               className="flex w-full items-center justify-between rounded-lg px-3 py-3 text-left transition hover:bg-slate-50"
-              onClick={() => setSelected(acc)}
+              aria-expanded={selectedId === acc.id}
+              onClick={() => setSelectedId((current) => (current === acc.id ? null : acc.id))}
             >
               <span>
                 <span className="block text-sm font-medium text-slate-800">{acc.name}</span>
-                <span className="mt-1 block text-xs text-slate-500">{acc.type} account</span>
+                <span className="mt-1 block text-xs text-slate-500">
+                  {acc.type} account • {acc.branch}
+                </span>
               </span>
-              <span className="text-xs font-medium text-blue-700">Review →</span>
+              <span className="flex items-center gap-2">
+                {acc.status && (
+                  <span
+                    className={`rounded-full px-2 py-1 text-xs font-medium ${
+                      acc.status === "Approved"
+                        ? "bg-emerald-50 text-emerald-700"
+                        : "bg-red-50 text-red-700"
+                    }`}
+                  >
+                    {acc.status}
+                  </span>
+                )}
+                <span className="text-xs font-medium text-blue-700">
+                  {selectedId === acc.id ? "Hide" : "Review"} →
+                </span>
+              </span>
             </button>
           </li>
         ))}
       </ul>
-      {selected && <LoanApprovalDetail item={selected} type="account" />}
+      {selected && (
+        <AccountApprovalDetail item={selected} onDecision={handleDecision} />
+      )}
     </section>
   );
 };

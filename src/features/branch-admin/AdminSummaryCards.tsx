@@ -14,25 +14,46 @@
 
 import React from "react";
 
-const AdminSummaryCards: React.FC = () => {
+export type AdminMetric = "accounts" | "loans" | "approved";
+
+interface AdminSummaryCardsProps {
+  selectedMetric: AdminMetric | null;
+  onSelectMetric: (metric: AdminMetric) => void;
+}
+
+const AdminSummaryCards: React.FC<AdminSummaryCardsProps> = ({
+  selectedMetric,
+  onSelectMetric,
+}) => {
   const stats = [
-    { title: "Pending Accounts", count: 12, accent: "text-blue-700", icon: "♙" },
-    { title: "Pending Loans", count: 8, accent: "text-violet-700", icon: "♜" },
-    { title: "Approved Today", count: 5, accent: "text-emerald-700", icon: "✓" },
+    { key: "accounts" as const, title: "Pending Accounts", count: 2, accent: "text-blue-700", icon: "♙" },
+    { key: "loans" as const, title: "Pending Loans", count: 2, accent: "text-violet-700", icon: "♜" },
+    { key: "approved" as const, title: "Approved Today", count: 1, accent: "text-emerald-700", icon: "✓" },
   ];
 
   return (
     <div className="grid gap-4 sm:grid-cols-3">
       {stats.map((stat) => (
-        <article key={stat.title} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-start justify-between">
-            <p className="text-sm font-medium text-slate-600">{stat.title}</p>
+        <button
+          key={stat.key}
+          type="button"
+          aria-pressed={selectedMetric === stat.key}
+          onClick={() => onSelectMetric(stat.key)}
+          className={`rounded-xl border bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+            selectedMetric === stat.key
+              ? "border-blue-500 ring-2 ring-blue-100"
+              : "border-slate-200"
+          }`}
+        >
+          <span className="flex items-start justify-between">
+            <span className="text-sm font-medium text-slate-600">{stat.title}</span>
             <span className={`flex h-9 w-9 items-center justify-center rounded-lg bg-slate-50 text-lg ${stat.accent}`}>
               {stat.icon}
             </span>
-          </div>
-          <p className={`mt-4 text-3xl font-bold ${stat.accent}`}>{stat.count}</p>
-        </article>
+          </span>
+          <span className={`mt-4 block text-3xl font-bold ${stat.accent}`}>{stat.count}</span>
+          <span className="mt-2 block text-xs text-slate-500">Click to view details</span>
+        </button>
       ))}
     </div>
   );
