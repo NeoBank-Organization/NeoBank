@@ -28,4 +28,7 @@ export {
   TransactionEmptyState,
   AccountRefreshButton,
 } from './AccountsStateHandlers';
+export { SpendInsightsDashboard } from './spend-insights/SpendInsightsDashboard';
+export { CategoryBreakdown } from './spend-insights/CategoryBreakdown';
+
 
