@@ -77,6 +77,11 @@ export const AppRoutes: React.FC = () => {
           />
 
           <Route
+            path="/spend-insights"
+            element={<SpendInsightsDashboard />}
+          />
+
+          <Route
             path="/accounts/:accountId"
             element={<AccountDetails />}
           />
