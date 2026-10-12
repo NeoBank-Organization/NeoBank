@@ -131,7 +131,7 @@ export const BeneficiaryList:React.FC=()=>{
                 key={beneficiary.id}
                 beneficiary={beneficiary}
                 onView={()=>console.log('View beneficiary',beneficiary.id)}
-                onPay={()=>console.log('Pay beneficiary',beneficiary.id)}
+                onPay={()=>navigate('/transfers')}
               />
             ))}
           </div>
