@@ -1,15 +1,30 @@
-/**
- * ============================================================================
- * COMPONENT: TransferValidation.tsx
- * DESCRIPTION: Form validation logic checking available balance limits and field constraints.
- * ----------------------------------------------------------------------------
- * FEATURE OWNER: R04 - Prashanth K
- * EMAIL: prashanth.k1517@gmail.com
- * ROLE: Fund Transfer feature owner
- * PRD REQUIREMENTS: BNK-FR-03 (Fund Transfer), BNK-AI-01 (Fraud Detection)
- * SPRINT DELIVERABLES: Sprint 1 (S1-12, S1-13, S1-14, S1-15) & Sprint 2 (S2-12, S2-13, S2-14)
- * PRIMARY RESPONSIBILITIES: Transfer forms, own/other-bank flows, validations, transaction summary, AI fraud detection
- * ============================================================================
- */
+import type { TransferDraft, TransferError } from './transfer.types';
+import type { AccountSummary } from '../../types/account.types';
+import { transferBeneficiaries, transferLimits } from './transferData';
 
-export const validateTransfer = (..._args: any[]): any => ({ valid: true });
+export function validateTransfer(draft: TransferDraft, accounts: AccountSummary[]): TransferError[] {
+  const errors: TransferError[] = [];
+  const amount = Number(draft.amount);
+  const source = accounts.find((account) => account.accountId === draft.sourceAccountId);
+
+  if (!draft.sourceAccountId) errors.push({ field: 'sourceAccountId', message: 'Choose an account to send from.' });
+  if (draft.transferType !== 'upi' && !draft.destinationId) errors.push({ field: 'destinationId', message: 'Choose a recipient.' });
+  if (draft.transferType === 'upi' && !/^[-a-zA-Z0-9._]{2,}@[a-zA-Z]{2,}$/.test(draft.destinationId)) {
+    errors.push({ field: 'destinationId', message: 'Enter a valid UPI ID, like name@bank.' });
+  }
+  if (!draft.amount || !Number.isFinite(amount) || amount <= 0) errors.push({ field: 'amount', message: 'Enter an amount greater than ₹0.' });
+  if (amount > transferLimits.daily) errors.push({ field: 'amount', message: 'This exceeds your ₹5,00,000 daily transfer limit.' });
+  if (draft.rail === 'IMPS' && amount > transferLimits.imps) errors.push({ field: 'amount', message: 'IMPS transfers are limited to ₹5,00,000.' });
+  if (draft.rail === 'RTGS' && amount < transferLimits.rtgsMinimum) errors.push({ field: 'amount', message: 'RTGS is available for transfers of ₹2,00,000 or more.' });
+  if (source && amount > source.availableBalance) errors.push({ field: 'amount', message: 'The amount is greater than your available balance.' });
+  if (draft.transferType === 'own' && draft.sourceAccountId === draft.destinationId) errors.push({ field: 'destinationId', message: 'Choose a different destination account.' });
+
+  const beneficiary = transferBeneficiaries.find((item) => item.id === draft.destinationId);
+  if (beneficiary?.status !== undefined && beneficiary.status !== 'ACTIVE') {
+    errors.push({ field: 'destinationId', message: beneficiary.status === 'PENDING' ? 'This beneficiary is still in the activation period.' : 'This beneficiary is inactive.' });
+  }
+  if (beneficiary && beneficiary.addedDaysAgo < 1) {
+    errors.push({ field: 'destinationId', message: `New beneficiaries can receive transfers after the ${transferLimits.newBeneficiaryCoolingHours}-hour activation period.` });
+  }
+  return errors;
+}

@@ -81,18 +81,14 @@ export const BeneficiaryList:React.FC=()=>{
 
   const filteredBeneficiaries=useMemo(()=>{
     const beneficiaries=[...mockBeneficiaries,...savedBeneficiaries];
-
     return beneficiaries.filter(beneficiary=>{
       const value=search.toLowerCase();
-
       const matchesSearch=
         beneficiary.name.toLowerCase().includes(value)||
         beneficiary.nickname.toLowerCase().includes(value)||
         beneficiary.bank.toLowerCase().includes(value)||
         ('upiId' in beneficiary&&typeof beneficiary.upiId==='string'&&beneficiary.upiId.toLowerCase().includes(value));
-
       const matchesStatus=status==='ALL'||beneficiary.status===status;
-
       return matchesSearch&&matchesStatus;
     });
   },[search,status,savedBeneficiaries]);
@@ -106,19 +102,16 @@ export const BeneficiaryList:React.FC=()=>{
             <h1 className="text-3xl font-medium text-slate-900">Beneficiaries</h1>
             <p className="mt-2 text-sm text-slate-500">Manage the people and accounts you send money to.</p>
           </div>
-
           <button type="button" onClick={()=>navigate('/beneficiaries/add')} className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-700">
             <Plus size={18}/>
             Add beneficiary
           </button>
         </div>
-
         <div className="mb-5 flex h-[68px] items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
           <div className="relative flex-1">
             <Search size={17} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"/>
             <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search beneficiaries" className="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm text-slate-700 outline-none focus:border-blue-500 focus:bg-white"/>
           </div>
-
           <select value={status} onChange={e=>setStatus(e.target.value)} className="h-11 w-[145px] rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-blue-500">
             <option value="ALL">All statuses</option>
             <option value="ACTIVE">Active</option>
@@ -126,7 +119,6 @@ export const BeneficiaryList:React.FC=()=>{
             <option value="INACTIVE">Inactive</option>
           </select>
         </div>
-
         {filteredBeneficiaries.length===0?(
           <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center">
             <h2 className="font-semibold text-slate-800">No beneficiaries found</h2>
@@ -139,7 +131,7 @@ export const BeneficiaryList:React.FC=()=>{
                 key={beneficiary.id}
                 beneficiary={beneficiary}
                 onView={()=>console.log('View beneficiary',beneficiary.id)}
-                onPay={()=>console.log('Pay beneficiary',beneficiary.id)}
+                onPay={()=>navigate('/transfers')}
               />
             ))}
           </div>

@@ -39,7 +39,7 @@ export const Login: React.FC = () => {
 
     if (!customerId.trim() || !password.trim()) {
       setError(
-        "Please enter your customer ID and password."
+        "Please enter your user ID and password."
       );
       return;
     }
@@ -48,10 +48,12 @@ export const Login: React.FC = () => {
 
     // Temporary mock login
     setTimeout(() => {
-      if (
-        customerId.trim() === "customer" &&
-        password === "123456"
-      ) {
+      const isAdmin =
+        customerId.trim() === "admin" && password === "123456";
+      const isCustomer =
+        customerId.trim() === "customer" && password === "123456";
+
+      if (isAdmin || isCustomer) {
         sessionStorage.setItem(
           "accessToken",
           "mock-access-token"
@@ -60,9 +62,9 @@ export const Login: React.FC = () => {
         sessionStorage.setItem(
           "user",
           JSON.stringify({
-            id: "101",
-            name: "NeoBank Customer",
-            role: "CUSTOMER",
+            id: isAdmin ? "admin-101" : "101",
+            name: isAdmin ? "Branch Admin" : "NeoBank Customer",
+            role: isAdmin ? "ADMIN" : "CUSTOMER",
           })
         );
 
@@ -79,7 +81,7 @@ export const Login: React.FC = () => {
           // Ignore storage errors
         }
 
-        navigate("/accounts");
+        navigate(isAdmin ? "/admin" : "/accounts");
       } else {
         setError(
           "Invalid customer ID or password."
@@ -637,13 +639,13 @@ export const Login: React.FC = () => {
                   text-[#071b3a]
                 "
               >
-                Customer ID
+                User ID
               </label>
 
               <input
                 id="customerId"
                 type="text"
-                placeholder="Enter your customer ID"
+                placeholder="Enter your user ID"
                 value={customerId}
                 onChange={(event) =>
                   setCustomerId(event.target.value)
@@ -825,7 +827,7 @@ export const Login: React.FC = () => {
                   "
                 />
 
-                Remember customer ID
+                Remember user ID
 
               </label>
 

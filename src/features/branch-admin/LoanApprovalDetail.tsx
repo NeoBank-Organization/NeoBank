@@ -12,10 +12,24 @@
  * ============================================================================
  */
 
-import React from 'react';
+import React, { useState } from "react";
+import ApproveRejectActions from "./ApproveRejectActions";
 
-export const LoanApprovalDetail: React.FC<any> = () => {
+interface Props {
+  item: any;
+  type: "account" | "loan";
+}
+
+const LoanApprovalDetail: React.FC<Props> = ({ item, type }) => {
   return (
-    <div></div>
+    <div className="mt-4 rounded-lg border border-blue-100 bg-blue-50/60 p-4">
+      <h3 className="text-sm font-semibold text-slate-900">Application details</h3>
+      <p className="mt-2 text-sm text-slate-700">
+        {type === "account" ? `${item.name} — ${item.type} account` : `${item.applicant} — ₹${item.amount.toLocaleString("en-IN")} loan`}
+      </p>
+      <ApproveRejectActions item={item} />
+    </div>
   );
 };
+
+export default LoanApprovalDetail;
