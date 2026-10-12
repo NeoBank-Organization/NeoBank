@@ -13,6 +13,7 @@ import { Login } from "../features/auth/Login";
 import { Signup } from "../features/auth/Signup";
 import { Unauthorized } from "../features/auth/Unauthorized";
 
+import { Dashboard } from "../pages/Dashboard/Dashboard";
 import { AccountsDashboard } from "../features/accounts/AccountsDashboard";
 import { AccountDetails } from "../features/accounts/AccountDetails";
 import { SpendInsightsDashboard } from "../features/accounts/spend-insights/SpendInsightsDashboard";
@@ -59,7 +60,7 @@ export const AppRoutes: React.FC = () => {
 
           <Route
             path="/dashboard"
-            element={<AccountsDashboard />}
+            element={<Dashboard />}
           />
 
           {/* Accounts */}

@@ -14,9 +14,9 @@ export const Unauthorized: React.FC = () => {
       </p>
 
       <button
-        onClick={() => navigate("/accounts")}
+        onClick={() => navigate("/dashboard")}
       >
-        Go to Accounts
+        Go to Dashboard
       </button>
     </div>
   );

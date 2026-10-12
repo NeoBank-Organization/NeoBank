@@ -2,6 +2,7 @@
  * ============================================================================
  * COMPONENT: AccountsDashboard.tsx
  * DESCRIPTION: Primary customer accounts dashboard displaying Savings, Current, and Fixed Deposit balances.
+ *              Internal lifecycle states (Loading, Empty, Error, Refresh) managed seamlessly via AccountsStateHandlers.
  * ----------------------------------------------------------------------------
  * FEATURE OWNER: R02 - Syd RJ
  * EMAIL: sydrj116@gmail.com
@@ -14,19 +15,21 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { 
-  RefreshCw, 
   Wallet, 
   Building2, 
   TrendingUp, 
   ShieldCheck, 
   Sparkles,
-  ArrowUpRight 
+  ArrowUpRight,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AccountSummary } from '../../types/account.types';
 import { getAccounts } from '../../services/accountService';
 import { AccountsList } from './AccountsList';
-import { AccountsStateHandlers } from './AccountsStateHandlers';
+import { 
+  AccountsStateHandlers, 
+  AccountRefreshButton,
+} from './AccountsStateHandlers';
 
 export const AccountsDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -34,7 +37,10 @@ export const AccountsDashboard: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorCode, setErrorCode] = useState<number>(500);
+  const [lastRefreshedAt, setLastRefreshedAt] = useState<Date>(new Date());
 
+  // Internal API Fetching Lifecycle Handler
   const fetchAccountData = useCallback(async (isManualRefresh = false) => {
     if (isManualRefresh) {
       setIsRefreshing(true);
@@ -46,7 +52,10 @@ export const AccountsDashboard: React.FC = () => {
     try {
       const data = await getAccounts();
       setAccounts(data);
+      setLastRefreshedAt(new Date());
     } catch (err: any) {
+      const statusMatch = err?.message?.match(/\b(401|404|500)\b/);
+      setErrorCode(statusMatch ? parseInt(statusMatch[1], 10) : 500);
       setError(err?.message || 'Failed to fetch customer account portfolio.');
     } finally {
       setIsLoading(false);
@@ -87,7 +96,6 @@ export const AccountsDashboard: React.FC = () => {
             <h1 className="nb-page-title">
               Accounts & Balances
             </h1>
-           
           </div>
           <p className="nb-page-subtitle">
             Consolidated overview of your Savings, Current, and Fixed Deposit accounts.
@@ -106,19 +114,12 @@ export const AccountsDashboard: React.FC = () => {
             <ArrowUpRight size={14} />
           </button>
 
-          {/* Refresh Button */}
-          <button
-            onClick={() => fetchAccountData(true)}
-            disabled={isRefreshing || isLoading}
-            className="nb-btn-refresh"
-            type="button"
-          >
-            <RefreshCw
-              size={14}
-              className={isRefreshing ? 'animate-spin' : ''}
-            />
-            {isRefreshing ? 'Refreshing...' : 'Refresh'}
-          </button>
+          {/* S1-07 Deliverable: Seamless Manual Refresh with Timestamp */}
+          <AccountRefreshButton
+            onRefresh={() => fetchAccountData(true)}
+            isRefreshing={isRefreshing}
+            lastUpdated={lastRefreshedAt}
+          />
         </div>
       </div>
 
@@ -183,12 +184,14 @@ export const AccountsDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Accounts Content List wrapped with lifecycle states */}
+      {/* Main Accounts Content List wrapped with internal S1-07 lifecycle states */}
       <AccountsStateHandlers
         isLoading={isLoading}
         error={error}
+        errorCode={errorCode}
         isEmpty={!isLoading && accounts.length === 0}
         onRetry={() => fetchAccountData(false)}
+        onRefresh={() => fetchAccountData(true)}
       >
         <AccountsList accounts={accounts} />
       </AccountsStateHandlers>

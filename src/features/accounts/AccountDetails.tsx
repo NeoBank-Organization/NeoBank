@@ -57,7 +57,10 @@ import { AccountMasking } from './AccountMasking';
 import { AccountTabs, AccountTabKey } from './AccountTabs';
 import {
   AccountLoadingSkeleton,
+  AccountDetailHeroSkeleton,
   AccountErrorState,
+  TransactionEmptyState,
+  AccountRefreshButton,
 } from './AccountsStateHandlers';
 
 export const AccountDetails: React.FC = () => {
@@ -70,6 +73,7 @@ export const AccountDetails: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastRefreshedAt, setLastRefreshedAt] = useState<Date>(new Date());
 
   // Tabs state
   const [activeTab, setActiveTab] = useState<AccountTabKey>('overview');
@@ -107,6 +111,7 @@ export const AccountDetails: React.FC = () => {
       ]);
       setAccount(accData);
       setTransactions(txData);
+      setLastRefreshedAt(new Date());
     } catch (err: any) {
       setError(err?.message || 'Unable to load account information.');
     } finally {
@@ -240,10 +245,7 @@ export const AccountDetails: React.FC = () => {
   if (isLoading) {
     return (
       <div className="nb-page-container">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-24 h-4 nb-skeleton-bar" />
-        </div>
-        <AccountLoadingSkeleton />
+        <AccountDetailHeroSkeleton />
       </div>
     );
   }
@@ -263,7 +265,10 @@ export const AccountDetails: React.FC = () => {
         </div>
         <AccountErrorState
           message={error || `Account ${accountId} could not be located in the banking core.`}
+          errorCode={error ? 500 : 404}
           onRetry={() => loadAccountData(false)}
+          onSecondaryAction={() => navigate('/accounts')}
+          secondaryActionLabel="Back to Accounts"
         />
       </div>
     );
@@ -307,17 +312,12 @@ export const AccountDetails: React.FC = () => {
             <ArrowUpRight size={13} />
           </button>
 
-          {/* Refresh button */}
-          <button
-            onClick={() => loadAccountData(true)}
-            disabled={isRefreshing}
-            className="nb-btn-refresh"
-            type="button"
-            title="Refresh balance and transactions"
-          >
-            <RefreshCw size={14} className={isRefreshing ? 'animate-spin' : ''} />
-            <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
-          </button>
+          {/* S1-07 Deliverable: One-Click Manual Refresh Button with Timestamp */}
+          <AccountRefreshButton
+            onRefresh={() => loadAccountData(true)}
+            isRefreshing={isRefreshing}
+            lastUpdated={lastRefreshedAt}
+          />
         </div>
       </div>
 
@@ -726,24 +726,15 @@ export const AccountDetails: React.FC = () => {
           {/* Transactions Table */}
           <div className="nb-tx-table-card">
             {paginatedTransactions.length === 0 ? (
-              <div className="p-12 text-center">
-                <AlertCircle size={32} className="mx-auto text-slate-400 mb-2" />
-                <h4 className="text-base font-bold text-slate-800 m-0">No matching transactions</h4>
-                <p className="text-sm text-slate-500 mt-1 mb-4">
-                  Try adjusting your search query or clear the active filters.
-                </p>
-                <button
-                  onClick={() => {
-                    setSearchQuery('');
-                    setTypeFilter('ALL');
-                    setCategoryFilter('ALL');
-                  }}
-                  className="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg text-xs font-semibold hover:bg-blue-100 transition-colors"
-                  type="button"
-                >
-                  Reset Search & Filters
-                </button>
-              </div>
+              <TransactionEmptyState
+                isFiltered={Boolean(searchQuery || typeFilter !== 'ALL' || categoryFilter !== 'ALL')}
+                onResetFilters={() => {
+                  setSearchQuery('');
+                  setTypeFilter('ALL');
+                  setCategoryFilter('ALL');
+                }}
+                onNewTransfer={() => navigate('/transfers')}
+              />
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
