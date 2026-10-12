@@ -31,7 +31,7 @@ import { StatementsDashboard } from '../features/scheduling-statements/Statement
 
 import { EMICalculator } from '../features/loans/EMICalculator';
 
-import { BranchAdminDashboard } from '../features/branch-admin/BranchAdminDashboard';
+import  BranchAdminDashboard from '../features/branch-admin/BranchAdminDashboard';
 import { UATScenarioRunner } from '../features/integration-uat/UATScenarioRunner';
 import LoanPage from '../features/loans/LoanPage';
 
@@ -51,7 +51,10 @@ export const AppRoutes: React.FC = () => {
           <Route path="statements" element={<StatementsDashboard />} />
           <Route path="loans" element={<LoanPage/>} />
           <Route path="loans/emi-calculator" element={<EMICalculator />} />
-          <Route path="admin" element={<ProtectedRoute role="admin"><BranchAdminDashboard /></ProtectedRoute>} />
+          <Route 
+          path="admin" 
+          element={<ProtectedRoute 
+          role="admin"><BranchAdminDashboard /></ProtectedRoute>} />
           <Route path="uat" element={<UATScenarioRunner />} />
         </Route>
       </Routes>
