@@ -17,13 +17,12 @@ import React from "react";
 const AdminAuditTrail: React.FC = () => {
   const logs = [
     { id: 1, action: "Approved Account - John Doe", time: "10:30 AM" },
-    { id: 2, action: "Rejected Loan - Bob", time: "11:00 AM" },
   ];
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 className="text-base font-semibold text-slate-900">Recent activity</h2>
-      <p className="mt-1 text-sm text-slate-500">Example administrative activity.</p>
+    <section className="rounded-xl my-6 border border-slate-200 bg-white p-5 shadow-sm">
+      <h2 className="text-base font-semibold text-slate-900">Approved today</h2>
+      <p className="mt-1 text-sm text-slate-500">Example approved applications.</p>
       <ul className="mt-4 divide-y divide-slate-100">
         {logs.map(log => (
           <li key={log.id} className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between">

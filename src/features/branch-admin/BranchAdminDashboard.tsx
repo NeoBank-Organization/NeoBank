@@ -12,13 +12,19 @@
  * ============================================================================
  */
 
-import React from "react";
-import AdminSummaryCards from "./AdminSummaryCards";
+import React, { useState } from "react";
+import AdminSummaryCards, { type AdminMetric } from "./AdminSummaryCards";
 import PendingAccountsList from "./PendingAccountsList";
 import PendingLoansList from "./PendingLoansList";
 import AdminAuditTrail from "./AdminAuditTrail";
 
 const BranchAdminDashboard: React.FC = () => {
+  const [selectedMetric, setSelectedMetric] = useState<AdminMetric | null>("accounts");
+
+  const handleMetricSelect = (metric: AdminMetric) => {
+    setSelectedMetric((current) => (current === metric ? null : metric));
+  };
+
   return (
     <section className="mx-auto max-w-6xl space-y-7">
       <header className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
@@ -32,22 +38,23 @@ const BranchAdminDashboard: React.FC = () => {
           </p>
         </div>
         <span className="w-fit rounded-full bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-800">
-          Demo data
+          Authentication placeholder
         </span>
       </header>
 
-      <AdminSummaryCards />
-
-      <div className="grid gap-5 lg:grid-cols-2">
-        <div>
-          <PendingAccountsList />
-        </div>
-        <div>
-          <PendingLoansList />
-        </div>
+      <div aria-live="polite">
+        <AdminSummaryCards
+          selectedMetric={selectedMetric}
+          onSelectMetric={handleMetricSelect}
+        />
+        {selectedMetric && (
+          <>
+            {selectedMetric === "accounts" && <PendingAccountsList />}
+            {selectedMetric === "loans" && <PendingLoansList />}
+            {selectedMetric === "approved" && <AdminAuditTrail />}
+          </>
+        )}
       </div>
-
-      <AdminAuditTrail />
     </section>
   );
 };
