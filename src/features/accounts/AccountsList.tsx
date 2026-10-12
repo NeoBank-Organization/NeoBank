@@ -15,6 +15,7 @@
 import React, { useState } from 'react';
 import { AccountCard } from './AccountCard';
 import { AccountSummary, AccountType } from '../../types/account.types';
+import { AccountEmptyState } from './AccountsStateHandlers';
 
 interface AccountsListProps {
   accounts: AccountSummary[];
@@ -59,9 +60,12 @@ export const AccountsList: React.FC<AccountsListProps> = ({ accounts }) => {
 
       {/* Account Cards Grid */}
       {filteredAccounts.length === 0 ? (
-        <div className="nb-empty-container py-10">
-          <p className="text-slate-500 text-sm m-0">No accounts found under this category.</p>
-        </div>
+        <AccountEmptyState
+          title="No Accounts Found Under This Category"
+          description="There are currently no active accounts matching your selected filter. Clear the filter to view all retail accounts."
+          actionLabel="Show All Accounts"
+          onAction={() => setSelectedFilter('ALL')}
+        />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredAccounts.map((account) => (

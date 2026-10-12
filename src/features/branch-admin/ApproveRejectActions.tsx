@@ -15,12 +15,42 @@
 import React, { useState } from "react";
 import RejectionReasonModal from "./RejectionReasonModal";
 
-const ApproveRejectActions: React.FC<{ item: any }> = ({ item }) => {
+export type ReviewStatus = "Approved" | "Rejected";
+
+interface ApproveRejectActionsProps {
+  status?: ReviewStatus;
+  rejectionReason?: string;
+  onDecision: (status: ReviewStatus, reason: string) => void;
+}
+
+const ApproveRejectActions: React.FC<ApproveRejectActionsProps> = ({
+  status,
+  rejectionReason,
+  onDecision,
+}) => {
   const [showReject, setShowReject] = useState(false);
 
   const handleApprove = () => {
-    alert(`Approved: ${JSON.stringify(item)}`);
+    onDecision("Approved", "");
   };
+
+  if (status) {
+    return (
+      <div
+        className={`mt-4 rounded-lg p-3 text-sm ${
+          status === "Approved"
+            ? "bg-emerald-50 text-emerald-800"
+            : "bg-red-50 text-red-800"
+        }`}
+        role="status"
+      >
+        <p className="font-semibold">Application {status.toLowerCase()}.</p>
+        {status === "Rejected" && rejectionReason && (
+          <p className="mt-1">Reason: {rejectionReason}</p>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="mt-4 flex gap-2">
@@ -39,7 +69,13 @@ const ApproveRejectActions: React.FC<{ item: any }> = ({ item }) => {
         Reject
       </button>
       {showReject && (
-        <RejectionReasonModal item={item} onClose={() => setShowReject(false)} />
+        <RejectionReasonModal
+          onClose={() => setShowReject(false)}
+          onConfirm={(reason) => {
+            onDecision("Rejected", reason);
+            setShowReject(false);
+          }}
+        />
       )}
     </div>
   );

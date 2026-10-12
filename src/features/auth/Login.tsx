@@ -81,7 +81,7 @@ export const Login: React.FC = () => {
           // Ignore storage errors
         }
 
-        navigate(isAdmin ? "/admin" : "/accounts");
+        navigate(isAdmin ? "/admin" : "/dashboard");
       } else {
         setError(
           "Invalid customer ID or password."
