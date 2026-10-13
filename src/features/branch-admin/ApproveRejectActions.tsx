@@ -12,10 +12,73 @@
  * ============================================================================
  */
 
-import React from 'react';
+import React, { useState } from "react";
+import RejectionReasonModal from "./RejectionReasonModal";
 
-export const ApproveRejectActions: React.FC<any> = () => {
+export type ReviewStatus = "Approved" | "Rejected";
+
+interface ApproveRejectActionsProps {
+  status?: ReviewStatus;
+  rejectionReason?: string;
+  onDecision: (status: ReviewStatus, reason: string) => void;
+}
+
+const ApproveRejectActions: React.FC<ApproveRejectActionsProps> = ({
+  status,
+  rejectionReason,
+  onDecision,
+}) => {
+  const [showReject, setShowReject] = useState(false);
+
+  const handleApprove = () => {
+    onDecision("Approved", "");
+  };
+
+  if (status) {
+    return (
+      <div
+        className={`mt-4 rounded-lg p-3 text-sm ${
+          status === "Approved"
+            ? "bg-emerald-50 text-emerald-800"
+            : "bg-red-50 text-red-800"
+        }`}
+        role="status"
+      >
+        <p className="font-semibold">Application {status.toLowerCase()}.</p>
+        {status === "Rejected" && rejectionReason && (
+          <p className="mt-1">Reason: {rejectionReason}</p>
+        )}
+      </div>
+    );
+  }
+
   return (
-    <div></div>
+    <div className="mt-4 flex gap-2">
+      <button
+        type="button"
+        className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-800"
+        onClick={handleApprove}
+      >
+        Approve
+      </button>
+      <button
+        type="button"
+        className="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-50"
+        onClick={() => setShowReject(true)}
+      >
+        Reject
+      </button>
+      {showReject && (
+        <RejectionReasonModal
+          onClose={() => setShowReject(false)}
+          onConfirm={(reason) => {
+            onDecision("Rejected", reason);
+            setShowReject(false);
+          }}
+        />
+      )}
+    </div>
   );
 };
+
+export default ApproveRejectActions;

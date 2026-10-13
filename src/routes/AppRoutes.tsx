@@ -13,6 +13,7 @@ import { Login } from "../features/auth/Login";
 import { Signup } from "../features/auth/Signup";
 import { Unauthorized } from "../features/auth/Unauthorized";
 
+import { Dashboard } from "../pages/Dashboard/Dashboard";
 import { AccountsDashboard } from "../features/accounts/AccountsDashboard";
 import { AccountDetails } from "../features/accounts/AccountDetails";
 import { SpendInsightsDashboard } from "../features/accounts/spend-insights/SpendInsightsDashboard";
@@ -25,11 +26,12 @@ import { TransferForm } from "../features/fund-transfer/TransferForm";
 import { ScheduledTransfersList } from "../features/scheduling-statements/ScheduledTransfersList";
 import { StatementsDashboard } from "../features/scheduling-statements/StatementsDashboard";
 
-import { LoanApplicationForm } from "../features/loans/LoanApplicationForm";
+
 import { EMICalculator } from "../features/loans/EMICalculator";
 
-import { BranchAdminDashboard } from "../features/branch-admin/BranchAdminDashboard";
+import  BranchAdminDashboard  from "../features/branch-admin/BranchAdminDashboard";
 import { UATScenarioRunner } from "../features/integration-uat/UATScenarioRunner";
+import LoanPage from "../features/loans/LoanPage";
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -59,7 +61,7 @@ export const AppRoutes: React.FC = () => {
 
           <Route
             path="/dashboard"
-            element={<AccountsDashboard />}
+            element={<Dashboard />}
           />
 
           {/* Accounts */}
@@ -71,6 +73,11 @@ export const AppRoutes: React.FC = () => {
 
           <Route
             path="/accounts/spend-insights"
+            element={<SpendInsightsDashboard />}
+          />
+
+          <Route
+            path="/spend-insights"
             element={<SpendInsightsDashboard />}
           />
 
@@ -111,11 +118,9 @@ export const AppRoutes: React.FC = () => {
           />
 
           {/* Loans */}
+          <Route path="loans" element={<LoanPage />} />
+          <Route path="loans/emi-calculator" element={<EMICalculator />} />
 
-          <Route
-            path="/loans"
-            element={<LoanApplicationForm />}
-          />
 
           <Route
             path="/loans/emi-calculator"
@@ -151,6 +156,7 @@ export const AppRoutes: React.FC = () => {
             path="*"
             element={<Navigate to="/dashboard" replace />}
           />
+
         </Route>
       </Routes>
     </BrowserRouter>

@@ -12,10 +12,64 @@
  * ============================================================================
  */
 
-import React from 'react';
+import React from "react";
+import ApproveRejectActions from "./ApproveRejectActions";
+import type { ReviewStatus } from "./ApproveRejectActions";
 
-export const AccountApprovalDetail: React.FC<any> = () => {
+interface AccountApprovalDetailProps {
+  item: {
+    id: number;
+    name: string;
+    type: string;
+    branch: string;
+    submittedAt: string;
+    risk: "Low" | "Medium" | "High";
+    status?: ReviewStatus;
+    rejectionReason?: string;
+  };
+  onDecision: (status: ReviewStatus, reason: string) => void;
+}
+
+export const AccountApprovalDetail: React.FC<AccountApprovalDetailProps> = ({
+  item,
+  onDecision,
+}) => {
   return (
-    <div></div>
+    <div className="mt-6 rounded-lg border border-blue-100 bg-blue-50/70 p-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h3 className="text-sm font-semibold text-slate-900">Account verification</h3>
+          <p className="mt-2 text-sm text-slate-700">
+            {item.name} • {item.type} account
+          </p>
+        </div>
+        <span className="w-fit rounded-full bg-white px-2.5 py-1 text-xs font-medium text-slate-700">
+          {item.risk} risk
+        </span>
+      </div>
+
+      <dl className="mt-4 grid gap-3 text-sm text-slate-600 sm:grid-cols-3">
+        <div className="rounded-md bg-white/70 p-3">
+          <dt className="text-xs uppercase tracking-wide text-slate-500">Branch</dt>
+          <dd className="mt-1 font-medium text-slate-800">{item.branch}</dd>
+        </div>
+        <div className="rounded-md bg-white/70 p-3">
+          <dt className="text-xs uppercase tracking-wide text-slate-500">Submitted</dt>
+          <dd className="mt-1 font-medium text-slate-800">{item.submittedAt}</dd>
+        </div>
+        <div className="rounded-md bg-white/70 p-3">
+          <dt className="text-xs uppercase tracking-wide text-slate-500">Customer ID</dt>
+          <dd className="mt-1 font-medium text-slate-800">CUST-{item.id.toString().padStart(4, "0")}</dd>
+        </div>
+      </dl>
+
+      <ApproveRejectActions
+        status={item.status}
+        rejectionReason={item.rejectionReason}
+        onDecision={onDecision}
+      />
+    </div>
   );
 };
+
+export default AccountApprovalDetail;
