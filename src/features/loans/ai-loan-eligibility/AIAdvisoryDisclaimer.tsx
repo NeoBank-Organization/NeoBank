@@ -12,10 +12,23 @@
  * ============================================================================
  */
 
-import React from 'react';
 
-export const AIAdvisoryDisclaimer: React.FC<any> = () => {
+import React from "react";
+import { ShieldAlert } from "lucide-react";
+
+export const AIAdvisoryDisclaimer: React.FC = () => {
   return (
-    <div></div>
+    <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50/70 p-3.5 text-xs text-amber-900">
+      <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+      <div>
+        <p className="font-semibold">Regulatory Pre-Assessment Advisory</p>
+        <p className="mt-0.5 text-[11px] leading-relaxed text-amber-800">
+          This AI score is indicative only and does not constitute formal credit approval.
+          The Bank Loan Officer retains full final authority for underwriting and sanction decisions.
+        </p>
+      </div>
+    </div>
   );
 };
+
+export default AIAdvisoryDisclaimer;
