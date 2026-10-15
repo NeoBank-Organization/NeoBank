@@ -1,21 +1,7 @@
-/**
- * ============================================================================
- * COMPONENT: FraudFallbackState.tsx
- * DESCRIPTION: BNK-AI-01: Fallback handling when AI fraud engine is offline, applying default rules.
- * ----------------------------------------------------------------------------
- * FEATURE OWNER: R04 - Prashanth K
- * EMAIL: prashanth.k1517@gmail.com
- * ROLE: Fund Transfer feature owner
- * PRD REQUIREMENTS: BNK-FR-03 (Fund Transfer), BNK-AI-01 (Fraud Detection)
- * SPRINT DELIVERABLES: Sprint 1 (S1-12, S1-13, S1-14, S1-15) & Sprint 2 (S2-12, S2-13, S2-14)
- * PRIMARY RESPONSIBILITIES: Transfer forms, own/other-bank flows, validations, transaction summary, AI fraud detection
- * ============================================================================
- */
+import { LockKeyhole } from 'lucide-react';
 
-import React from 'react';
-
-export const FraudFallbackState: React.FC<any> = () => {
-  return (
-    <div></div>
-  );
-};
+export const FraudFallbackState = ({ compact = false }: { compact?: boolean }) => (
+  <div className={`flex items-start gap-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 ${compact ? 'px-3 py-2' : 'px-4 py-3'}`}>
+    <LockKeyhole size={15} className="mt-0.5 shrink-0 text-slate-500"/><p className="text-[11px] leading-5">Safety checks run locally in this demo using sample rules. No payment is sent to a bank.</p>
+  </div>
+);

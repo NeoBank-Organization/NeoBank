@@ -1,12 +1,21 @@
 import React from "react";
+
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 
+import { useState } from "react";
+
+import { BankingAssistantDrawer } from "../../features/transfer-security-upi/banking-assistant/BankingAssistantDrawer";
+
 import { logout } from "../../services/authService";
+
 import { useSessionTimeout } from "../../hooks/useSessionTimeout";
+
 import type { User } from "../../features/auth/auth.types";
 
 export const AppLayout: React.FC = () => {
   const navigate = useNavigate();
+
+  const [assistantOpen, setAssistantOpen] = useState(false);
 
   useSessionTimeout();
 
@@ -60,12 +69,12 @@ export const AppLayout: React.FC = () => {
     },
     {
       label: "Fund Transfer",
-      path: "/transfer",
+      path: "/transfers",
       icon: "➤",
     },
     {
       label: "Scheduled Transfers",
-      path: "/scheduled-transfers",
+      path: "/transfers/scheduled",
       icon: "□",
     },
     {
@@ -80,7 +89,12 @@ export const AppLayout: React.FC = () => {
     },
     {
       label: "Spend Insights",
-      path: "/spend-insights",
+      path: "/accounts/spend-insights",
+      icon: "◔",
+    },
+    {
+      label: "Admin Dashboard",
+      path: "/admin",
       icon: "◔",
     },
   ];
@@ -196,12 +210,19 @@ export const AppLayout: React.FC = () => {
 
           <div className="space-y-0.5">
 
-            {menuItems.map((item) => (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                className={({ isActive }) =>
-                  `
+            {menuItems
+              .filter((item) =>
+                user?.role === "ADMIN"
+                  ? item.path === "/admin"
+                  : item.path !== "/admin"
+              )
+              .map((item) => (
+
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    `
                     group
                     relative
                     flex
@@ -220,59 +241,62 @@ export const AppLayout: React.FC = () => {
                         ? "bg-[#1d4f8d] text-white"
                         : "text-blue-100/70 hover:bg-white/[0.06] hover:text-white"
                     }
-                  `
-                }
-              >
-                {({ isActive }) => (
-                  <>
+                    `
+                  }
+                >
 
-                    {/* Active indicator */}
+                  {({ isActive }) => (
+                    <>
 
-                    {isActive && (
+                      {/* Active indicator */}
+
+                      {isActive && (
+                        <span
+                          className="
+                            absolute
+                            left-0
+                            h-5
+                            w-[3px]
+                            rounded-r-full
+                            bg-blue-400
+                          "
+                        />
+                      )}
+
+                      {/* Icon */}
+
                       <span
-                        className="
-                          absolute
-                          left-0
-                          h-5
-                          w-[3px]
-                          rounded-r-full
-                          bg-blue-400
-                        "
-                      />
-                    )}
+                        className={`
+                          flex
+                          h-7
+                          w-7
+                          items-center
+                          justify-center
+                          rounded-md
+                          text-xs
 
-                    {/* Icon */}
+                          ${
+                            isActive
+                              ? "bg-white/10 text-white"
+                              : "text-blue-200/70 group-hover:text-white"
+                          }
+                        `}
+                      >
+                        {item.icon}
+                      </span>
 
-                    <span
-                      className={`
-                        flex
-                        h-7
-                        w-7
-                        items-center
-                        justify-center
-                        rounded-md
-                        text-xs
+                      {/* Text */}
 
-                        ${
-                          isActive
-                            ? "bg-white/10 text-white"
-                            : "text-blue-200/70 group-hover:text-white"
-                        }
-                      `}
-                    >
-                      {item.icon}
-                    </span>
+                      <span>
+                        {item.label}
+                      </span>
 
-                    {/* Text */}
+                    </>
+                  )}
 
-                    <span>
-                      {item.label}
-                    </span>
+                </NavLink>
 
-                  </>
-                )}
-              </NavLink>
-            ))}
+              ))}
 
           </div>
 
@@ -280,15 +304,22 @@ export const AppLayout: React.FC = () => {
 
           <div className="mt-3">
 
-            <div
+            <button
+              type="button"
+              onClick={() => setAssistantOpen(true)}
+              aria-label="Open Banking Assistant"
+              aria-haspopup="dialog"
+              aria-expanded={assistantOpen}
               className="
                 flex
                 h-10
+                w-full
                 cursor-pointer
                 items-center
                 gap-3
                 rounded-lg
                 px-3
+                text-left
                 text-[11px]
                 font-medium
                 text-blue-100/70
@@ -332,7 +363,7 @@ export const AppLayout: React.FC = () => {
                 AI
               </span>
 
-            </div>
+            </button>
 
           </div>
 
@@ -558,6 +589,7 @@ export const AppLayout: React.FC = () => {
                 transition
                 hover:text-[#17365f]
               "
+              aria-label="Notifications"
             >
               ♧
             </button>
@@ -602,7 +634,7 @@ export const AppLayout: React.FC = () => {
                     text-gray-400
                   "
                 >
-                  Customer
+                  {user?.role === "ADMIN" ? "Admin" : "Customer"}
                 </p>
 
               </div>
@@ -630,6 +662,13 @@ export const AppLayout: React.FC = () => {
         </main>
 
       </div>
+
+      {/* ================= BANKING ASSISTANT DRAWER ================= */}
+
+      <BankingAssistantDrawer
+        open={assistantOpen}
+        onClose={() => setAssistantOpen(false)}
+      />
 
     </div>
   );

@@ -8,7 +8,7 @@ This project structure is mapped directly to the **NeoBank Product Requirements 
 |---|---|---|---|---|
 | **R01** | Mubina HVR | `mubina.hvr@gmail.com` | Frontend foundation, security and integration lead | Shared Shell, Session Timeout (BNK-FR-07), Virtual Keyboard, Route Infrastructure |
 | **R02** | Syd RJ | `sydrj116@gmail.com` | Accounts feature owner | Accounts Dashboard (BNK-FR-01), Spend Insights AI (BNK-AI-02), Account Masking |
-| **R03** | Poorvi K | `poorvipoorvikan@gmail.com` | Beneficiary feature owner | Beneficiary List & Add Form (BNK-FR-02), IFSC Lookup, KYC Document Check AI (BNK-AI-04) |
+| **R03** | Poorvika N | `poorvipoorvikan@gmail.com` | Beneficiary feature owner | Beneficiary List & Add Form (BNK-FR-02), IFSC Lookup, KYC Document Check AI (BNK-AI-04) |
 | **R04** | Prashanth K | `prashanth.k1517@gmail.com` | Fund Transfer feature owner | Own/Other-Bank Transfer (BNK-FR-03), Validation, Fraud Detection AI (BNK-AI-01) |
 | **R05** | Ramya N | `ramyan.s1814009@gmail.com` | Transfer security & mock UPI owner | Mock UPI, OTP Confirmation Modal (BNK-FR-03), Banking Assistant AI (BNK-AI-05) |
 | **R06** | Sundaravadhanisekar | `sundaravadhanisekar@gmail.com` | Scheduling & Statements feature owner | Scheduled Transfers (BNK-FR-04), Statement Generation & PDF Download (BNK-FR-05) |
