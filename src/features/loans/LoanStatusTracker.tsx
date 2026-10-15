@@ -1,79 +1,63 @@
 /**
  * ============================================================================
  * COMPONENT: LoanStatusTracker.tsx
- * DESCRIPTION: Displays the current loan application review status.
+ * DESCRIPTION: S1-26 & S2-23 Post-submission lifecycle status tracker
  * ============================================================================
  */
 
 import React from "react";
-import type { LoanApplicationStatus } from "./loanService";
 
-interface LoanStatusTrackerProps {
-  status: LoanApplicationStatus;
-  rejectionReason?: string;
+export interface LoanStatusTrackerProps {
+  applicationNumber: string;
+  currentStep?: 1 | 2 | 3 | 4;
 }
 
-const steps: Array<{ status: LoanApplicationStatus; label: string }> = [
-  { status: "SUBMITTED", label: "Submitted" },
-  { status: "UNDER_REVIEW", label: "Under review" },
-  { status: "APPROVED", label: "Approved" },
-];
-
 export const LoanStatusTracker: React.FC<LoanStatusTrackerProps> = ({
-  status,
-  rejectionReason,
+  applicationNumber,
+  currentStep = 3,
 }) => {
-  if (status === "REJECTED") {
-    return (
-      <section className="rounded-xl border border-red-200 bg-red-50 p-5" aria-live="polite">
-        <h2 className="font-semibold text-red-900">Application rejected</h2>
-        <p className="mt-1 text-sm text-red-800">
-          The application was reviewed and could not be approved.
-        </p>
-        {rejectionReason && (
-          <p className="mt-3 text-sm text-red-800">
-            <span className="font-medium">Reason:</span> {rejectionReason}
-          </p>
-        )}
-      </section>
-    );
-  }
-
-  const currentStep = steps.findIndex((step) => step.status === status);
+  const steps = [
+    { label: "Submitted", desc: "Application received" },
+    { label: "AI Pre-Check", desc: "Advisory score verified" },
+    { label: "Officer Review", desc: "Underwriting in progress" },
+    { label: "Final Decision", desc: "Sanction / Rejection" },
+  ];
 
   return (
-    <section
-      className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
-      aria-label={`Loan application status: ${status.toLowerCase().replace("_", " ")}`}
-    >
-      <h2 className="font-semibold text-slate-900">Application status</h2>
-      <ol className="mt-5 grid grid-cols-3 gap-2">
-        {steps.map((step, index) => {
-          const isComplete = index <= currentStep;
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 space-y-4">
+      <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+        <div>
+          <p className="text-xs text-slate-400 font-mono">{applicationNumber}</p>
+          <h3 className="text-base font-bold text-slate-900">Application Lifecycle</h3>
+        </div>
+        <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+          In Review
+        </span>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2">
+        {steps.map((st, i) => {
+          const isDone = i + 1 < currentStep;
+          const isCurrent = i + 1 === currentStep;
           return (
-            <li key={step.status} className="text-center">
-              <span
-                className={`mx-auto flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold ${
-                  isComplete
-                    ? "bg-blue-700 text-white"
-                    : "bg-slate-100 text-slate-500"
-                }`}
-              >
-                {index + 1}
-              </span>
-              <span
-                className={`mt-2 block text-xs sm:text-sm ${
-                  index === currentStep
-                    ? "font-semibold text-blue-800"
-                    : "text-slate-600"
-                }`}
-              >
-                {step.label}
-              </span>
-            </li>
+            <div
+              key={st.label}
+              className={`rounded-xl p-3 border text-xs ${
+                isDone
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-900"
+                  : isCurrent
+                  ? "border-blue-300 bg-blue-50 text-blue-900 font-semibold"
+                  : "border-slate-200 bg-slate-50 text-slate-400"
+              }`}
+            >
+              <p className="font-bold">{isDone ? "✓ " : isCurrent ? "● " : "○ "}{st.label}</p>
+              <p className="text-[11px] opacity-80 mt-0.5">{st.desc}</p>
+            </div>
           );
         })}
-      </ol>
-    </section>
+      </div>
+    </div>
   );
 };
+
+export default LoanStatusTracker;

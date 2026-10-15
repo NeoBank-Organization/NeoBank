@@ -3,13 +3,9 @@
  * COMPONENT: LoanPage.tsx
  * DESCRIPTION: Multi-step retail loan application container & orchestrator.
  * ----------------------------------------------------------------------------
- * FEATURE OWNER: R07 - Aishwarya Honawad
- * ROLE: Loans feature owner
- * PRD REQUIREMENTS: BNK-FR-06 (Loans & EMI), BNK-AI-03 (AI Loan Eligibility)
+ * FEATURE OWNER: R07 - Aishwarya Honawad (aishwaryahonawad7@gmail.com)
  * ============================================================================
  */
-
-
 
 import React, { useState } from "react";
 import { Building2, ArrowRight } from "lucide-react";
@@ -106,15 +102,11 @@ export const LoanPage: React.FC = () => {
       {/* Body View Based on Role or Page Mode                    */}
       {/* ======================================================== */}
       <div className="mx-auto max-w-6xl">
-        {/* FIGMA SCREEN: LOAN OFFICER / BRANCH ADMIN APPROVAL WORKSPACE */}
+        {/* WHEN LOAN OFFICER OR BRANCH ADMIN IS CLICKED: */}
         {role !== "customer" ? (
-          <LoanOfficerHandoff
-            onCreateNew={() => {
-              alert("Creating new record...");
-            }}
-          />
+          <LoanOfficerHandoff />
         ) : pageMode === "application" ? (
-          /* FIGMA SCREEN: CUSTOMER APPLICATION FLOW */
+          /* CUSTOMER APPLICATION FLOW */
           <ApplicantInputStep
             loanName={selectedLoan.name}
             indicativeRate={selectedLoan.indicativeRateValue}
@@ -131,7 +123,7 @@ export const LoanPage: React.FC = () => {
               onClick={() => setPageMode("application")}
               className="text-xs font-medium text-slate-500 hover:text-slate-800"
             >
-              ← Back to loan configuration
+              &larr; Back to loan configuration
             </button>
             <AILoanEligibilityCard
               result={{
@@ -143,20 +135,18 @@ export const LoanPage: React.FC = () => {
                 reasons: [
                   "Strong simulated credit score (780+).",
                   "Debt-to-Income ratio of 28% is well below the 50% limit.",
-                  "Sufficient surplus disposable income to service ₹" +
-                    (applicationData?.emi.toLocaleString("en-IN") || "16,245") +
-                    "/mo.",
+                  "Sufficient surplus disposable income to service EMI.",
                 ],
               }}
               onModifyInputs={() => setPageMode("application")}
               onProceedToSubmit={() => {
-                alert("Simulated application submitted to Loan Officer!");
+                alert("Simulated application submitted to Loan Officer queue!");
                 setPageMode("catalog");
               }}
             />
           </div>
         ) : (
-          /* FIGMA SCREEN: CUSTOMER HERO & CATALOG VIEW */
+          /* CUSTOMER HERO & CATALOG VIEW */
           <div className="space-y-6">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-blue-700">

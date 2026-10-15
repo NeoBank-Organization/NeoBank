@@ -120,6 +120,7 @@ export const AppRoutes: React.FC = () => {
           {/* Loans */}
           <Route path="loans" element={<LoanPage />} />
           <Route path="loans/emi-calculator" element={<EMICalculator />} />
+          
 
 
           <Route

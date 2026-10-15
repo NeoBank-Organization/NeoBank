@@ -54,14 +54,14 @@ export const LoanCard: React.FC<LoanCardProps> = ({ loan, onApply }) => {
         <p className="mt-2 text-xs leading-relaxed text-slate-500">{loan.description}</p>
       </div>
 
-      <button
+      {/* <button
         type="button"
         onClick={() => onApply(loan)}
         className="mt-6 inline-flex items-center gap-1.5 text-xs font-medium text-blue-600 transition hover:text-blue-800"
       >
         Learn more
         <ArrowRight className="h-3.5 w-3.5" />
-      </button>
+      </button> */}
     </div>
   );
 };
