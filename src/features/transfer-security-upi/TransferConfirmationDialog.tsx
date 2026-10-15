@@ -2,6 +2,7 @@
  * ============================================================================
  * COMPONENT: TransferConfirmationDialog.tsx
  * DESCRIPTION: Reviews transfer details before the security verification flow.
+ * ----------------------------------------------------------------------------
  * FEATURE OWNER: R05 - Ramya N
  * EMAIL: ramyan.s1814009@gmail.com
  * ROLE: Transfer security & mock UPI owner

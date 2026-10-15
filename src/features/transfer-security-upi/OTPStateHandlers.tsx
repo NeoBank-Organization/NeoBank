@@ -1,7 +1,8 @@
 /**
  * ============================================================================
  * COMPONENT: OTPStateHandlers.tsx
- * DESCRIPTION: Controls confirmation, PIN, OTP, and transaction result states.
+ * DESCRIPTION: Controls confirmation, PIN, OTP, expiry, and transaction result states.
+ * ----------------------------------------------------------------------------
  * FEATURE OWNER: R05 - Ramya N
  * EMAIL: ramyan.s1814009@gmail.com
  * ROLE: Transfer security & mock UPI owner
@@ -9,8 +10,7 @@
  * SPRINT DELIVERABLES: S1-16, S1-17, S1-18, S1-19, S2-18, S2-19, S2-20
  * ============================================================================
  */
-
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { TransferConfirmationDialog } from "./TransferConfirmationDialog";
 import { UPIPinModal } from "./UPIPinModal";
 import { OTPVerificationModal } from "./OTPVerificationModal";
@@ -28,8 +28,10 @@ export interface OTPStateHandlersProps {
   sourceAccount?: string;
   note?: string;
   method?: TransferMethod;
+  simulatedOutcome?: TransactionStatus;
   onComplete?: (transaction: TransactionResultData) => void;
   onCancel?: () => void;
+  onNewTransfer?: () => void;
 }
 
 type FlowStage = "CONFIRM" | "PIN" | "OTP" | "RESULT";
@@ -37,9 +39,9 @@ type FlowStage = "CONFIRM" | "PIN" | "OTP" | "RESULT";
 const DEMO_UPI_PIN = "1234";
 const DEMO_OTP = "123456";
 const MAX_ATTEMPTS = 3;
+const DEMO_OTP_EXPIRY_SECONDS = 60;
 
-const makeReference = () =>
-  `NB${Date.now().toString().slice(-10)}`;
+const makeReference = () => `NB${Date.now().toString().slice(-10)}`;
 
 export const OTPStateHandlers = ({
   recipient,
@@ -47,14 +49,22 @@ export const OTPStateHandlers = ({
   sourceAccount,
   note,
   method = "UPI",
+  simulatedOutcome = "SUCCESS",
   onComplete,
   onCancel,
+  onNewTransfer,
 }: OTPStateHandlersProps) => {
   const [stage, setStage] = useState<FlowStage>("CONFIRM");
   const [pinError, setPinError] = useState("");
   const [otpError, setOtpError] = useState("");
-  const [attemptsRemaining, setAttemptsRemaining] = useState(MAX_ATTEMPTS);
-  const [isVerifying, setIsVerifying] = useState(false);
+  const [pinAttemptsRemaining, setPinAttemptsRemaining] =
+    useState(MAX_ATTEMPTS);
+  const [otpAttemptsRemaining, setOtpAttemptsRemaining] =
+    useState(MAX_ATTEMPTS);
+  const [otpExpired, setOtpExpired] = useState(false);
+  const [otpExpirySecondsRemaining, setOtpExpirySecondsRemaining] = useState(
+    DEMO_OTP_EXPIRY_SECONDS,
+  );
   const [transaction, setTransaction] =
     useState<TransactionResultData | null>(null);
 
@@ -62,8 +72,10 @@ export const OTPStateHandlers = ({
     setStage("CONFIRM");
     setPinError("");
     setOtpError("");
-    setAttemptsRemaining(MAX_ATTEMPTS);
-    setIsVerifying(false);
+    setPinAttemptsRemaining(MAX_ATTEMPTS);
+    setOtpAttemptsRemaining(MAX_ATTEMPTS);
+    setOtpExpired(false);
+    setOtpExpirySecondsRemaining(DEMO_OTP_EXPIRY_SECONDS);
     setTransaction(null);
   };
 
@@ -72,52 +84,9 @@ export const OTPStateHandlers = ({
     onCancel?.();
   };
 
-  const startSecurity = () => {
-    setPinError("");
-    setOtpError("");
-    setAttemptsRemaining(MAX_ATTEMPTS);
-    setStage(method === "UPI" ? "PIN" : "OTP");
-  };
-
-  const handlePinVerify = (pin: string) => {
-    if (pin !== DEMO_UPI_PIN) {
-      setPinError("Incorrect demo PIN. Please enter 1234.");
-      return;
-    }
-
-    setPinError("");
-    setStage("OTP");
-  };
-
-  const handleOtpVerify = (otp: string) => {
-    if (isVerifying) return;
-
-    if (otp !== DEMO_OTP) {
-      const nextAttempts = attemptsRemaining - 1;
-      setAttemptsRemaining(nextAttempts);
-
-      if (nextAttempts <= 0) {
-        finishTransaction("HELD", "Too many incorrect OTP attempts. Transfer held by demo security.");
-      } else {
-        setOtpError("Incorrect demo OTP. Please try again.");
-      }
-      return;
-    }
-
-    setOtpError("");
-    setIsVerifying(true);
-
-    // Simulate processing without calling a real banking service.
-    const status: TransactionStatus =
-      amount > 50000 ? "HELD" : "SUCCESS";
-
-    const message =
-      status === "HELD"
-        ? "This high-value transfer was held by the demo security rule."
-        : "The simulated transfer has completed.";
-
-    finishTransaction(status, message);
-    setIsVerifying(false);
+  const startNewTransfer = () => {
+    resetFlow();
+    onNewTransfer?.();
   };
 
   const finishTransaction = (
@@ -139,11 +108,116 @@ export const OTPStateHandlers = ({
     onComplete?.(result);
   };
 
-  const handleRetry = () => {
-    setOtpError("");
+  const startSecurity = () => {
     setPinError("");
-    setAttemptsRemaining(MAX_ATTEMPTS);
+    setOtpError("");
+    setPinAttemptsRemaining(MAX_ATTEMPTS);
+    setOtpAttemptsRemaining(MAX_ATTEMPTS);
+    setOtpExpired(false);
+    setOtpExpirySecondsRemaining(DEMO_OTP_EXPIRY_SECONDS);
     setStage(method === "UPI" ? "PIN" : "OTP");
+  };
+
+  useEffect(() => {
+    if (stage !== "OTP" || otpExpired) {
+      return;
+    }
+
+    const countdown = setInterval(() => {
+      setOtpExpirySecondsRemaining((seconds) => {
+        if (seconds <= 1) {
+          clearInterval(countdown);
+          setOtpExpired(true);
+          return 0;
+        }
+
+        return seconds - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(countdown);
+  }, [stage, otpExpired]);
+
+  const handlePinVerify = (pin: string) => {
+    if (pin !== DEMO_UPI_PIN) {
+      const remaining = pinAttemptsRemaining - 1;
+      setPinAttemptsRemaining(remaining);
+
+      if (remaining <= 0) {
+        setPinError("");
+        finishTransaction(
+          "HELD",
+          "The transfer was held after three incorrect demo PIN attempts.",
+        );
+      } else {
+        setPinError(
+          `Incorrect demo PIN. Use 1234. ${remaining} attempt(s) remaining.`,
+        );
+      }
+
+      return;
+    }
+
+    setPinError("");
+    setStage("OTP");
+  };
+
+  const handleOtpVerify = (otp: string) => {
+    if (otpExpired) {
+      setOtpError("This demo OTP has expired. Please resend the OTP.");
+      return;
+    }
+
+    if (otp !== DEMO_OTP) {
+      const remaining = otpAttemptsRemaining - 1;
+      setOtpAttemptsRemaining(remaining);
+
+      if (remaining <= 0) {
+        setOtpError("");
+        finishTransaction(
+          "HELD",
+          "The transfer was held after three incorrect demo OTP attempts.",
+        );
+      } else {
+        setOtpError(
+          `Incorrect demo OTP. Use 123456. ${remaining} attempt(s) remaining.`,
+        );
+      }
+
+      return;
+    }
+
+    setOtpError("");
+
+    switch (simulatedOutcome) {
+      case "SUCCESS":
+        finishTransaction(
+          "SUCCESS",
+          "The simulated transfer completed successfully. No real funds were moved.",
+        );
+        break;
+
+      case "FAILED":
+        finishTransaction(
+          "FAILED",
+          "The simulated transfer failed. No real funds were moved.",
+        );
+        break;
+
+      case "HELD":
+        finishTransaction(
+          "HELD",
+          "The simulated security check has placed this transfer on hold. No real funds were moved.",
+        );
+        break;
+    }
+  };
+
+  const handleResendOtp = () => {
+    setOtpExpired(false);
+    setOtpExpirySecondsRemaining(DEMO_OTP_EXPIRY_SECONDS);
+    setOtpAttemptsRemaining(MAX_ATTEMPTS);
+    setOtpError("");
   };
 
   if (stage === "RESULT" && transaction) {
@@ -151,8 +225,7 @@ export const OTPStateHandlers = ({
       <TransactionResult
         status={transaction.status}
         transaction={transaction}
-        onNewTransfer={resetFlow}
-        onRetry={transaction.status === "FAILED" ? handleRetry : undefined}
+        onNewTransfer={startNewTransfer}
       />
     );
   }
@@ -172,7 +245,7 @@ export const OTPStateHandlers = ({
       <UPIPinModal
         open={stage === "PIN"}
         error={pinError}
-        isVerifying={isVerifying}
+        attemptsRemaining={pinAttemptsRemaining}
         onVerify={handlePinVerify}
         onCancel={cancelFlow}
       />
@@ -181,11 +254,12 @@ export const OTPStateHandlers = ({
         open={stage === "OTP"}
         recipient={recipient}
         error={otpError}
-        attemptsRemaining={attemptsRemaining}
-        isVerifying={isVerifying}
+        attemptsRemaining={otpAttemptsRemaining}
+        expired={otpExpired}
+        expirySecondsRemaining={otpExpirySecondsRemaining}
         onVerify={handleOtpVerify}
         onCancel={cancelFlow}
-        onResend={() => setOtpError("Demo OTP reset. Use 123456 to continue.")}
+        onResend={handleResendOtp}
       />
     </>
   );

@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   ArrowDownLeft,
   ArrowRight,
@@ -13,8 +14,10 @@ import {
   Wallet,
 } from 'lucide-react';
 
+
 import { accountsMock } from '../../data/accountsMock';
 import { OTPVerificationModal } from '../transfer-security-upi/OTPVerificationModal';
+import type { TransactionStatus } from '../transfer-security-upi/TransactionResult';
 import { FraudExplanationCard } from './fraud-detection/FraudExplanationCard';
 import { FraudFallbackState } from './fraud-detection/FraudFallbackState';
 import { FraudHoldModal } from './fraud-detection/FraudHoldModal';
@@ -24,6 +27,7 @@ import { OwnAccountTransfer } from './OwnAccountTransfer';
 import { TransactionSummary } from './TransactionSummary';
 import { TransferTypeSelector } from './TransferTypeSelector';
 
+
 import {
   transferBeneficiaries,
   recentTransfers as initialRecentTransfers,
@@ -31,7 +35,9 @@ import {
   transferLimits,
 } from './transferData';
 
+
 import { validateTransfer } from './TransferValidation';
+
 
 import type {
   RiskLevel,
@@ -42,6 +48,7 @@ import type {
   TransferType,
 } from './transfer.types';
 
+
 const initialDraft: TransferDraft = {
   transferType: 'beneficiary',
   sourceAccountId: 'ACC-1001',
@@ -51,15 +58,23 @@ const initialDraft: TransferDraft = {
   note: '',
 };
 
+
 const bankAccounts = accountsMock.filter(
   (account) =>
     account.accountStatus === 'ACTIVE' && account.accountType !== 'FD',
 );
 
+
 const money = (amount: number) => formatINR(amount);
+
 
 // Demo only. This is not a real banking OTP.
 const DEMO_OTP = '123456';
+const DEMO_OTP_EXPIRY_SECONDS = 60;
+
+
+type DemoOutcome = TransactionStatus;
+
 
 export const TransferForm = () => {
   const [draft, setDraft] = useState<TransferDraft>(initialDraft);
@@ -67,7 +82,9 @@ export const TransferForm = () => {
   const [review, setReview] = useState(false);
   const [receipt, setReceipt] = useState<TransferReceipt | null>(null);
 
+
   const [holdOpen, setHoldOpen] = useState(false);
+
 
   // OTP verification state.
   const [otpOpen, setOtpOpen] = useState(false);
@@ -75,18 +92,46 @@ export const TransferForm = () => {
   const [otpAttempts, setOtpAttempts] = useState(3);
   const [isVerifying, setIsVerifying] = useState(false);
 
+
+  // OTP expiry state.
+  const [otpExpired, setOtpExpired] = useState(false);
+  const [otpExpirySeconds, setOtpExpirySeconds] = useState(
+    DEMO_OTP_EXPIRY_SECONDS,
+  );
+
+
+  // Demo-only simulated outcome.
+  const [simulatedOutcome, setSimulatedOutcome] =
+    useState<DemoOutcome>('SUCCESS');
+
+
+  // Used for FAILED and HELD final results.
+  const [failedReceipt, setFailedReceipt] = useState<{
+    reference: string;
+    amount: number;
+    recipient: string;
+    completedAt: string;
+    rail: TransferReceipt['rail'];
+    status: 'FAILED' | 'HELD';
+  } | null>(null);
+
+
   const [recent, setRecent] = useState(initialRecentTransfers);
   const [transferredToday, setTransferredToday] = useState(63_000);
 
+
   const amount = Number(draft.amount) || 0;
+
 
   const source = bankAccounts.find(
     (account) => account.accountId === draft.sourceAccountId,
   );
 
+
   const beneficiary = transferBeneficiaries.find(
     (item) => item.id === draft.destinationId,
   );
+
 
   const recipientName =
     draft.transferType === 'own'
@@ -96,6 +141,7 @@ export const TransferForm = () => {
       : draft.transferType === 'upi'
         ? draft.destinationId
         : beneficiary?.name ?? '';
+
 
   const recipientDetails =
     draft.transferType === 'own'
@@ -108,12 +154,15 @@ export const TransferForm = () => {
             beneficiary?.accountLast4 ?? ''
           }`;
 
+
   const errorFor = (field: keyof TransferDraft) =>
     errors.find((error) => error.field === field)?.message;
+
 
   const risk = useMemo(() => {
     const factors: string[] = [];
     let score = 12;
+
 
     if (
       draft.transferType === 'beneficiary' &&
@@ -124,32 +173,65 @@ export const TransferForm = () => {
       factors.push('Recipient bank is outside NeoBank.');
     }
 
+
     if (amount >= 50_000) {
       score += 20;
       factors.push('Amount is above your usual transfer size.');
     }
+
 
     if (amount >= 200_000) {
       score += 30;
       factors.push('Large value transfer requires stronger verification.');
     }
 
+
     if (draft.transferType === 'upi') {
       factors.push('UPI recipient will be checked before payment.');
     }
+
 
     if (draft.transferType === 'own') {
       score = 5;
       factors.push('Both accounts belong to you.');
     }
 
+
     score = Math.min(score, 95);
+
 
     const level: RiskLevel =
       score >= 60 ? 'HIGH' : score >= 30 ? 'MEDIUM' : 'LOW';
 
+
     return { score, level, factors };
   }, [amount, beneficiary, draft.transferType]);
+
+
+  useEffect(() => {
+    if (!otpOpen || otpExpired) {
+      return;
+    }
+
+
+    const countdown = setInterval(() => {
+      setOtpExpirySeconds((seconds) => {
+        if (seconds <= 1) {
+          clearInterval(countdown);
+          setOtpExpired(true);
+          setOtpError('This demo OTP has expired. Please resend the OTP.');
+          return 0;
+        }
+
+
+        return seconds - 1;
+      });
+    }, 1000);
+
+
+    return () => clearInterval(countdown);
+  }, [otpOpen, otpExpired]);
+
 
   const update = <K extends keyof TransferDraft>(
     field: K,
@@ -161,6 +243,7 @@ export const TransferForm = () => {
     );
   };
 
+
   const setTransferType = (type: TransferType) => {
     setDraft((current) => ({
       ...current,
@@ -169,47 +252,63 @@ export const TransferForm = () => {
       rail: type === 'upi' ? 'IMPS' : current.rail,
     }));
 
+
     setErrors([]);
     setReview(false);
   };
 
+
   const startReview = () => {
     const nextErrors = validateTransfer(draft, bankAccounts);
 
+
     setErrors(nextErrors);
+
 
     if (nextErrors.length === 0) {
       setReview(true);
     }
   };
 
+
+  const getTransferRail = (): TransferReceipt['rail'] => {
+    if (draft.transferType === 'own') {
+      return 'OWN ACCOUNT';
+    }
+
+
+    if (draft.transferType === 'upi') {
+      return 'IMPS';
+    }
+
+
+    return draft.rail;
+  };
+
+
+  const getCompletedAt = () =>
+    new Intl.DateTimeFormat('en-IN', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    }).format(new Date());
+
+
   // Only this function creates a successful transaction receipt.
   const finishTransfer = () => {
     const ref = `NEO${Date.now().toString().slice(-10)}`;
 
-    // TransferReceipt supports TransferRail | "OWN ACCOUNT".
-    // Use IMPS for the UPI receipt to remain type-compatible.
-    const rail: TransferReceipt['rail'] =
-      draft.transferType === 'own'
-        ? 'OWN ACCOUNT'
-        : draft.transferType === 'upi'
-          ? 'IMPS'
-          : draft.rail;
-
-    const completedAt = new Intl.DateTimeFormat('en-IN', {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-    }).format(new Date());
 
     setReceipt({
       reference: ref,
       amount,
       recipient: recipientName,
-      completedAt,
-      rail,
+      completedAt: getCompletedAt(),
+      rail: getTransferRail(),
     });
 
+
     setTransferredToday((current) => current + amount);
+
 
     setRecent((current) =>
       [
@@ -224,33 +323,74 @@ export const TransferForm = () => {
       ].slice(0, 4),
     );
 
+
     setHoldOpen(false);
     setReview(false);
   };
+
+
+  const finishFailedTransfer = (status: 'FAILED' | 'HELD') => {
+    const ref = `NEO${Date.now().toString().slice(-10)}`;
+
+
+    setFailedReceipt({
+      reference: ref,
+      amount,
+      recipient: recipientName,
+      completedAt: getCompletedAt(),
+      rail: getTransferRail(),
+      status,
+    });
+
+
+    setOtpOpen(false);
+    setIsVerifying(false);
+    setOtpError('');
+    setOtpAttempts(3);
+    setOtpExpired(false);
+    setOtpExpirySeconds(DEMO_OTP_EXPIRY_SECONDS);
+    setHoldOpen(false);
+    setReview(false);
+  };
+
 
   // Confirmation starts the security flow, not the receipt.
   const confirmTransfer = () => {
     setOtpError('');
     setOtpAttempts(3);
     setIsVerifying(false);
+    setOtpExpired(false);
+    setOtpExpirySeconds(DEMO_OTP_EXPIRY_SECONDS);
+
 
     if (risk.level === 'HIGH') {
       setHoldOpen(true);
       return;
     }
 
+
     setOtpOpen(true);
   };
 
+
   // Verify the demo OTP without asynchronous work.
   const verifyOTP = (otp: string) => {
-    if (isVerifying || !otpOpen) return;
+    if (!otpOpen) return;
+
+
+    if (otpExpired) {
+      setOtpError('This demo OTP has expired. Please resend the OTP.');
+      return;
+    }
+
 
     setIsVerifying(true);
     setOtpError('');
 
+
     if (otp !== DEMO_OTP) {
       const remaining = Math.max(otpAttempts - 1, 0);
+
 
       setOtpAttempts(remaining);
       setOtpError(
@@ -259,49 +399,78 @@ export const TransferForm = () => {
           : `Incorrect demo OTP. ${remaining} attempt(s) remaining.`,
       );
 
+
       setIsVerifying(false);
       return;
     }
 
-    // Close and reset the OTP modal before displaying the receipt.
+
     setOtpOpen(false);
     setIsVerifying(false);
     setOtpError('');
     setOtpAttempts(3);
+    setOtpExpired(false);
+    setOtpExpirySeconds(DEMO_OTP_EXPIRY_SECONDS);
+
+
+    if (simulatedOutcome === 'FAILED') {
+      finishFailedTransfer('FAILED');
+      return;
+    }
+
+
+    if (simulatedOutcome === 'HELD') {
+      finishFailedTransfer('HELD');
+      return;
+    }
+
 
     finishTransfer();
   };
+
 
   const cancelOTP = () => {
     setOtpOpen(false);
     setOtpError('');
     setOtpAttempts(3);
     setIsVerifying(false);
+    setOtpExpired(false);
+    setOtpExpirySeconds(DEMO_OTP_EXPIRY_SECONDS);
   };
+
 
   const resendOTP = () => {
     // Demo only: no SMS or real OTP delivery occurs.
-    setOtpError('Demo OTP reset. Enter 123456 to continue.');
+    setOtpExpired(false);
+    setOtpExpirySeconds(DEMO_OTP_EXPIRY_SECONDS);
     setOtpAttempts(3);
+    setOtpError('Demo OTP resent. Enter 123456 to continue.');
     setIsVerifying(false);
   };
+
 
   const resetTransfer = () => {
     setDraft(initialDraft);
     setErrors([]);
     setReview(false);
     setReceipt(null);
+    setFailedReceipt(null);
     setHoldOpen(false);
     setOtpOpen(false);
     setOtpError('');
     setOtpAttempts(3);
     setIsVerifying(false);
+    setOtpExpired(false);
+    setOtpExpirySeconds(DEMO_OTP_EXPIRY_SECONDS);
+    setSimulatedOutcome('SUCCESS');
   };
+
 
   const progress = Math.min(
     (transferredToday / transferLimits.daily) * 100,
     100,
   );
+
 
   return (
     <div className="mx-auto w-full max-w-6xl pb-10">
@@ -312,24 +481,39 @@ export const TransferForm = () => {
             Payments
           </div>
 
+
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
             Fund transfer
           </h1>
+
 
           <p className="mt-1.5 text-sm text-slate-500">
             Send money securely to your accounts or someone new.
           </p>
         </div>
 
-        <a
-          href="/transfers/scheduled"
-          className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 transition hover:border-blue-300 hover:text-blue-700"
-        >
-          <Clock3 size={15} />
-          Scheduled transfers
-          <ChevronRight size={14} />
-        </a>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            to="/transfers/security-demo"
+            className="inline-flex h-10 items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 text-xs font-semibold text-blue-700 transition hover:bg-blue-100"
+          >
+            <ShieldCheck size={15} />
+            Transfer security demo
+          </Link>
+
+
+          <a
+            href="/transfers/scheduled"
+            className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 transition hover:border-blue-300 hover:text-blue-700"
+          >
+            <Clock3 size={15} />
+            Scheduled transfers
+            <ChevronRight size={14} />
+          </a>
+        </div>
       </div>
+
 
       <div className="mb-6 grid gap-4 lg:grid-cols-[1.45fr_0.8fr]">
         <section className="rounded-2xl bg-gradient-to-br from-[#0d3268] via-[#124b97] to-[#1b68ce] p-5 text-white shadow-sm sm:p-6">
@@ -346,10 +530,12 @@ export const TransferForm = () => {
               </p>
             </div>
 
+
             <span className="grid h-10 w-10 place-items-center rounded-xl bg-white/10">
               <Wallet size={20} />
             </span>
           </div>
+
 
           <div className="mt-5 flex flex-wrap items-end justify-between gap-4">
             <div>
@@ -359,6 +545,7 @@ export const TransferForm = () => {
               </p>
             </div>
 
+
             <a
               href="/accounts"
               className="inline-flex items-center gap-1 text-xs font-semibold text-white/90 hover:text-white"
@@ -367,6 +554,7 @@ export const TransferForm = () => {
             </a>
           </div>
         </section>
+
 
         <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
@@ -382,10 +570,12 @@ export const TransferForm = () => {
               </p>
             </div>
 
+
             <span className="grid h-9 w-9 place-items-center rounded-lg bg-emerald-50 text-emerald-600">
               <ShieldCheck size={18} />
             </span>
           </div>
+
 
           <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
             <div
@@ -394,6 +584,7 @@ export const TransferForm = () => {
             />
           </div>
 
+
           <p className="mt-2 flex justify-between text-[10px] text-slate-400">
             <span>Used today {money(transferredToday)}</span>
             <span>Limit {money(transferLimits.daily)}</span>
@@ -401,19 +592,23 @@ export const TransferForm = () => {
         </section>
       </div>
 
+
       {receipt ? (
         <section className="mx-auto max-w-2xl rounded-2xl border border-emerald-100 bg-white p-6 text-center shadow-sm sm:p-10">
           <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-emerald-50 text-emerald-600">
             <BadgeCheck size={34} />
           </div>
 
+
           <p className="mt-5 text-xs font-semibold uppercase tracking-widest text-emerald-700">
             Transfer successful
           </p>
 
+
           <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
             {money(receipt.amount)}
           </h2>
+
 
           <p className="mt-2 text-sm text-slate-600">
             Sent to{' '}
@@ -421,6 +616,7 @@ export const TransferForm = () => {
               {receipt.recipient}
             </strong>
           </p>
+
 
           <div className="mx-auto mt-6 max-w-md rounded-xl bg-slate-50 p-4 text-left">
             <div className="flex justify-between gap-4 border-b border-slate-200 pb-3 text-xs">
@@ -430,12 +626,14 @@ export const TransferForm = () => {
               </span>
             </div>
 
+
             <div className="mt-3 flex justify-between gap-4 text-xs">
               <span className="text-slate-500">Date &amp; time</span>
               <span className="font-medium text-slate-700">
                 {receipt.completedAt}
               </span>
             </div>
+
 
             <div className="mt-3 flex justify-between gap-4 text-xs">
               <span className="text-slate-500">Method</span>
@@ -444,6 +642,7 @@ export const TransferForm = () => {
               </span>
             </div>
           </div>
+
 
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <button
@@ -454,6 +653,7 @@ export const TransferForm = () => {
               <Plus size={16} /> New transfer
             </button>
 
+
             <button
               type="button"
               onClick={() => window.print()}
@@ -462,6 +662,114 @@ export const TransferForm = () => {
               <FileText size={16} /> Print receipt
             </button>
           </div>
+
+
+          <p className="mt-5 text-[11px] text-slate-400">
+            Demo only: no money has been moved between bank accounts.
+          </p>
+        </section>
+      ) : failedReceipt ? (
+        <section
+          className={`mx-auto max-w-2xl rounded-2xl border p-6 text-center shadow-sm sm:p-10 ${
+            failedReceipt.status === 'FAILED'
+              ? 'border-rose-100 bg-white'
+              : 'border-amber-100 bg-white'
+          }`}
+        >
+          <div
+            className={`mx-auto grid h-16 w-16 place-items-center rounded-full ${
+              failedReceipt.status === 'FAILED'
+                ? 'bg-rose-50 text-rose-600'
+                : 'bg-amber-50 text-amber-600'
+            }`}
+          >
+            <ShieldCheck size={34} />
+          </div>
+
+
+          <p
+            className={`mt-5 text-xs font-semibold uppercase tracking-widest ${
+              failedReceipt.status === 'FAILED'
+                ? 'text-rose-700'
+                : 'text-amber-700'
+            }`}
+          >
+            {failedReceipt.status === 'FAILED'
+              ? 'Transfer failed'
+              : 'Transfer on hold'}
+          </p>
+
+
+          <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
+            {money(failedReceipt.amount)}
+          </h2>
+
+
+          <p className="mt-2 text-sm text-slate-600">
+            {failedReceipt.status === 'FAILED'
+              ? 'The simulated transfer could not be completed. No real funds were moved.'
+              : 'The simulated security check has placed this transfer on hold. No real funds were moved.'}
+          </p>
+
+
+          <div className="mx-auto mt-6 max-w-md rounded-xl bg-slate-50 p-4 text-left">
+            <div className="flex justify-between gap-4 border-b border-slate-200 pb-3 text-xs">
+              <span className="text-slate-500">Reference number</span>
+              <span className="font-mono font-semibold text-slate-800">
+                {failedReceipt.reference}
+              </span>
+            </div>
+
+
+            <div className="mt-3 flex justify-between gap-4 text-xs">
+              <span className="text-slate-500">Recipient</span>
+              <span className="font-medium text-slate-700">
+                {failedReceipt.recipient}
+              </span>
+            </div>
+
+
+            <div className="mt-3 flex justify-between gap-4 text-xs">
+              <span className="text-slate-500">Date &amp; time</span>
+              <span className="font-medium text-slate-700">
+                {failedReceipt.completedAt}
+              </span>
+            </div>
+
+
+            <div className="mt-3 flex justify-between gap-4 text-xs">
+              <span className="text-slate-500">Method</span>
+              <span className="font-medium text-slate-700">
+                {failedReceipt.rail}
+              </span>
+            </div>
+
+
+            <div className="mt-3 flex justify-between gap-4 text-xs">
+              <span className="text-slate-500">Status</span>
+              <span
+                className={`font-semibold ${
+                  failedReceipt.status === 'FAILED'
+                    ? 'text-rose-700'
+                    : 'text-amber-700'
+                }`}
+              >
+                {failedReceipt.status === 'FAILED' ? 'Failed' : 'On hold'}
+              </span>
+            </div>
+          </div>
+
+
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <button
+              type="button"
+              onClick={resetTransfer}
+              className="inline-flex h-11 items-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-semibold text-white hover:bg-blue-700"
+            >
+              <Plus size={16} /> Start another transfer
+            </button>
+          </div>
+
 
           <p className="mt-5 text-[11px] text-slate-400">
             Demo only: no money has been moved between bank accounts.
@@ -480,11 +788,14 @@ export const TransferForm = () => {
               {review ? <Check size={13} /> : '1'}
             </span>
 
+
             <span className={review ? 'text-slate-400' : 'text-slate-700'}>
               Transfer details
             </span>
 
+
             <span className="mx-1 h-px w-8 bg-slate-200" />
+
 
             <span
               className={`grid h-6 w-6 place-items-center rounded-full ${
@@ -496,9 +807,12 @@ export const TransferForm = () => {
               2
             </span>
 
+
             <span className={review ? 'text-slate-700' : ''}>Review</span>
 
+
             <span className="mx-1 h-px w-8 bg-slate-200" />
+
 
             <span
               className={`grid h-6 w-6 place-items-center rounded-full ${
@@ -510,8 +824,10 @@ export const TransferForm = () => {
               3
             </span>
 
+
             <span className={otpOpen ? 'text-slate-700' : ''}>OTP</span>
           </div>
+
 
           {!review ? (
             <div className="grid items-start gap-5 lg:grid-cols-[1.5fr_0.8fr]">
@@ -525,12 +841,15 @@ export const TransferForm = () => {
                   </p>
                 </div>
 
+
                 <TransferTypeSelector
                   value={draft.transferType}
                   onChange={setTransferType}
                 />
 
+
                 <div className="my-6 border-t border-slate-100" />
+
 
                 {draft.transferType === 'own' ? (
                   <OwnAccountTransfer
@@ -559,6 +878,7 @@ export const TransferForm = () => {
                   />
                 )}
 
+
                 {draft.transferType !== 'own' && (
                   <div className="mt-5">
                     <label
@@ -567,6 +887,7 @@ export const TransferForm = () => {
                     >
                       Pay from
                     </label>
+
 
                     <select
                       id="source-account"
@@ -588,6 +909,7 @@ export const TransferForm = () => {
                       ))}
                     </select>
 
+
                     {errorFor('sourceAccountId') && (
                       <p className="mt-1 text-xs text-rose-600">
                         {errorFor('sourceAccountId')}
@@ -596,11 +918,13 @@ export const TransferForm = () => {
                   </div>
                 )}
 
+
                 <div className="mt-5 grid gap-4 sm:grid-cols-2">
                   <label className="block">
                     <span className="mb-2 block text-xs font-semibold text-slate-600">
                       Amount
                     </span>
+
 
                     <span
                       className={`flex h-[52px] items-center gap-2 rounded-xl border px-4 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100 ${
@@ -612,6 +936,7 @@ export const TransferForm = () => {
                       <span className="text-sm font-semibold text-slate-400">
                         ₹
                       </span>
+
 
                       <input
                         inputMode="decimal"
@@ -627,21 +952,25 @@ export const TransferForm = () => {
                       />
                     </span>
 
+
                     {errorFor('amount') && (
                       <span className="mt-1 block text-xs text-rose-600">
                         {errorFor('amount')}
                       </span>
                     )}
 
+
                     <span className="mt-1.5 block text-[10px] text-slate-400">
                       Up to ₹5,00,000 per day
                     </span>
                   </label>
 
+
                   <label className="block">
                     <span className="mb-2 block text-xs font-semibold text-slate-600">
                       Note <span className="font-normal text-slate-400">(optional)</span>
                     </span>
+
 
                     <input
                       maxLength={60}
@@ -653,15 +982,56 @@ export const TransferForm = () => {
                       className="h-[52px] w-full rounded-xl border border-slate-200 px-4 text-sm outline-none placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                     />
 
+
                     <span className="mt-1.5 block text-right text-[10px] text-slate-400">
                       {draft.note.length}/60
                     </span>
                   </label>
                 </div>
 
+
+                <div className="mt-5 rounded-xl border border-blue-100 bg-blue-50 p-4">
+                  <label
+                    htmlFor="transfer-outcome"
+                    className="mb-2 block text-xs font-semibold text-slate-800"
+                  >
+                    Demo result scenario
+                  </label>
+
+
+                  <select
+                    id="transfer-outcome"
+                    value={simulatedOutcome}
+                    onChange={(event) =>
+                      setSimulatedOutcome(
+                        event.target.value as DemoOutcome,
+                      )
+                    }
+                    className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm"
+                  >
+                    <option value="SUCCESS">
+                      Success — simulated transfer succeeds
+                    </option>
+                    <option value="FAILED">
+                      Failure — simulated transfer fails
+                    </option>
+                    <option value="HELD">
+                      On hold — security check holds transfer
+                    </option>
+                  </select>
+
+
+                  <p className="mt-2 text-[11px] leading-5 text-slate-600">
+                    Test setting only. This controls the simulated result and
+                    does not initiate a real transaction.
+                  </p>
+                </div>
+
+
                 <div className="mt-5">
                   <FraudRiskIndicator level={risk.level} score={risk.score} />
                 </div>
+
 
                 <button
                   type="button"
@@ -672,6 +1042,7 @@ export const TransferForm = () => {
                 </button>
               </section>
 
+
               <div className="space-y-4">
                 <TransactionSummary
                   amount={amount}
@@ -681,10 +1052,12 @@ export const TransferForm = () => {
                   recipient={recipientName}
                 />
 
+
                 <FraudExplanationCard
                   level={risk.level}
                   factors={risk.factors}
                 />
+
 
                 <FraudFallbackState />
               </div>
@@ -697,6 +1070,7 @@ export const TransferForm = () => {
                     <ShieldCheck size={20} />
                   </span>
 
+
                   <div>
                     <h2 className="text-base font-bold text-slate-900">
                       Review your transfer
@@ -707,11 +1081,13 @@ export const TransferForm = () => {
                   </div>
                 </div>
 
+
                 <div className="mt-5 rounded-xl border border-slate-100">
                   <div className="flex items-center gap-3 border-b border-slate-100 p-4">
                     <span className="grid h-9 w-9 place-items-center rounded-full bg-slate-100 text-slate-600">
                       <Wallet size={16} />
                     </span>
+
 
                     <span className="min-w-0 flex-1">
                       <span className="block text-[10px] text-slate-400">
@@ -725,16 +1101,19 @@ export const TransferForm = () => {
                       </span>
                     </span>
 
+
                     <ArrowDownLeft
                       size={16}
                       className="rotate-180 text-slate-400"
                     />
                   </div>
 
+
                   <div className="flex items-center gap-3 p-4">
                     <span className="grid h-9 w-9 place-items-center rounded-full bg-blue-50 text-blue-600">
                       <ArrowDownLeft size={16} />
                     </span>
+
 
                     <span className="min-w-0 flex-1">
                       <span className="block text-[10px] text-slate-400">
@@ -750,6 +1129,7 @@ export const TransferForm = () => {
                   </div>
                 </div>
 
+
                 <div className="mt-4 grid grid-cols-2 gap-3">
                   <div className="rounded-xl bg-slate-50 p-3">
                     <p className="text-[10px] text-slate-400">
@@ -759,6 +1139,7 @@ export const TransferForm = () => {
                       {money(amount)}
                     </p>
                   </div>
+
 
                   <div className="rounded-xl bg-slate-50 p-3">
                     <p className="text-[10px] text-slate-400">METHOD</p>
@@ -776,15 +1157,18 @@ export const TransferForm = () => {
                   </div>
                 </div>
 
+
                 {draft.note && (
                   <p className="mt-3 rounded-lg bg-blue-50 px-3 py-2 text-xs text-blue-800">
                     Note: {draft.note}
                   </p>
                 )}
 
+
                 <div className="mt-4">
                   <FraudRiskIndicator level={risk.level} score={risk.score} />
                 </div>
+
 
                 <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row">
                   <button
@@ -795,6 +1179,7 @@ export const TransferForm = () => {
                     Edit details
                   </button>
 
+
                   <button
                     type="button"
                     onClick={confirmTransfer}
@@ -804,11 +1189,13 @@ export const TransferForm = () => {
                   </button>
                 </div>
 
+
                 <p className="mt-4 text-center text-[10px] text-slate-400">
                   <Sparkles size={12} className="mr-1 inline" />
                   Demo only: confirming starts the security verification flow.
                 </p>
               </section>
+
 
               <div className="space-y-4">
                 <TransactionSummary
@@ -819,10 +1206,12 @@ export const TransferForm = () => {
                   recipient={recipientName}
                 />
 
+
                 <FraudExplanationCard
                   level={risk.level}
                   factors={risk.factors}
                 />
+
 
                 <FraudFallbackState compact />
               </div>
@@ -830,6 +1219,7 @@ export const TransferForm = () => {
           )}
         </>
       )}
+
 
       <section className="mt-7 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <div className="mb-4 flex items-center justify-between">
@@ -841,6 +1231,7 @@ export const TransferForm = () => {
               Your latest payments from this account.
             </p>
           </div>
+
 
           <button
             type="button"
@@ -854,11 +1245,15 @@ export const TransferForm = () => {
                     : 'ben-rohan',
               });
               setReceipt(null);
+              setFailedReceipt(null);
               setReview(false);
               setOtpOpen(false);
               setOtpError('');
               setOtpAttempts(3);
               setIsVerifying(false);
+              setOtpExpired(false);
+              setOtpExpirySeconds(DEMO_OTP_EXPIRY_SECONDS);
+              setSimulatedOutcome('SUCCESS');
               setHoldOpen(false);
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
@@ -867,6 +1262,7 @@ export const TransferForm = () => {
             Repeat transfer <ChevronRight size={14} />
           </button>
         </div>
+
 
         <div className="divide-y divide-slate-100">
           {recent.map((item, index) => (
@@ -882,6 +1278,7 @@ export const TransferForm = () => {
                   .slice(0, 2)}
               </span>
 
+
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-xs font-semibold text-slate-800">
                   {item.name}
@@ -890,6 +1287,7 @@ export const TransferForm = () => {
                   {item.detail} · {item.date}
                 </span>
               </span>
+
 
               <span className="text-right">
                 <span className="block text-xs font-semibold text-slate-800">
@@ -905,22 +1303,24 @@ export const TransferForm = () => {
         </div>
       </section>
 
+
       <div className="mt-4 flex items-start gap-2 px-1 text-[10px] leading-5 text-slate-400">
         <ShieldCheck size={13} className="mt-0.5 shrink-0" />
         Your transfers are protected with device verification and transaction
         monitoring. Never share your password, PIN, or one-time code with anyone.
       </div>
 
+
       <OTPVerificationModal
         open={otpOpen}
         recipient={recipientName}
         error={otpError}
         attemptsRemaining={otpAttempts}
-        isVerifying={isVerifying}
         onVerify={verifyOTP}
         onCancel={cancelOTP}
         onResend={resendOTP}
       />
+
 
       <FraudHoldModal
         open={holdOpen}
@@ -930,6 +1330,8 @@ export const TransferForm = () => {
           setOtpError('');
           setOtpAttempts(3);
           setIsVerifying(false);
+          setOtpExpired(false);
+          setOtpExpirySeconds(DEMO_OTP_EXPIRY_SECONDS);
           setOtpOpen(true);
         }}
       />

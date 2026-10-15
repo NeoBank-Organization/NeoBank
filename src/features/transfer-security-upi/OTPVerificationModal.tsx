@@ -18,7 +18,8 @@ interface OTPVerificationModalProps {
   recipient?: string;
   error?: string;
   attemptsRemaining?: number;
-  isVerifying?: boolean;
+  expired?: boolean;
+  expirySecondsRemaining?: number;
   onVerify: (otp: string) => void;
   onCancel: () => void;
   onResend?: () => void;
@@ -29,7 +30,8 @@ export const OTPVerificationModal = ({
   recipient,
   error,
   attemptsRemaining,
-  isVerifying = false,
+  expired = false,
+  expirySecondsRemaining,
   onVerify,
   onCancel,
   onResend,
@@ -37,7 +39,9 @@ export const OTPVerificationModal = ({
   const [otp, setOtp] = useState("");
 
   useEffect(() => {
-    if (!open) setOtp("");
+    if (!open) {
+      setOtp("");
+    }
   }, [open]);
 
   if (!open) return null;
@@ -45,9 +49,10 @@ export const OTPVerificationModal = ({
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!/^\d{6}$/.test(otp) || isVerifying) return;
-
-    onVerify(otp);
+    if (/^\d{6}$/.test(otp)) {
+      onVerify(otp);
+      setOtp("");
+    }
   };
 
   const handleCancel = () => {
@@ -74,8 +79,11 @@ export const OTPVerificationModal = ({
         className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
       >
         <div className="mb-5 flex items-center gap-3">
-          <div className="grid h-11 w-11 place-items-center rounded-full bg-blue-50 text-blue-700">
-            <span className="text-xl" aria-hidden="true">🔒</span>
+          <div
+            className="grid h-11 w-11 place-items-center rounded-full bg-blue-50 text-blue-700"
+            aria-hidden="true"
+          >
+            <span className="text-xl">🔒</span>
           </div>
 
           <div>
@@ -119,22 +127,22 @@ export const OTPVerificationModal = ({
             }
             placeholder="Enter OTP"
             required
-            disabled={isVerifying}
-            aria-describedby="otp-help otp-error"
-            className="h-12 w-full rounded-xl border border-slate-300 px-4 text-center text-xl tracking-[0.5em] outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-100"
+            aria-describedby="otp-help"
+            className="h-12 w-full rounded-xl border border-slate-300 px-4 text-center text-xl tracking-[0.5em] outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           />
 
-          <p id="otp-help" className="mt-2 text-xs text-slate-500">
-            Demo OTP: <strong>123456</strong>
-          </p>
-
-          {error && (
+          {expired ? (
             <p
-              id="otp-error"
               role="alert"
-              className="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-700"
+              className="mt-2 rounded-lg bg-amber-50 p-3 text-xs font-semibold text-amber-800"
             >
-              {error}
+              This demo OTP has expired. Click “Resend OTP” to continue.
+            </p>
+          ) : (
+            <p id="otp-help" className="mt-2 text-xs text-slate-500">
+              Test OTP: <strong>123456</strong>
+              {typeof expirySecondsRemaining === "number" &&
+                ` · Expires in ${expirySecondsRemaining}s`}
             </p>
           )}
 
@@ -144,22 +152,30 @@ export const OTPVerificationModal = ({
             </p>
           )}
 
+          {error && (
+            <p
+              role="alert"
+              className="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-700"
+            >
+              {error}
+            </p>
+          )}
+
           <div className="mt-6 flex gap-3">
             <button
               type="button"
               onClick={handleCancel}
-              disabled={isVerifying}
-              className="h-11 flex-1 rounded-xl border border-slate-200 font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+              className="h-11 flex-1 rounded-xl border border-slate-200 font-semibold text-slate-700 hover:bg-slate-50"
             >
               Cancel
             </button>
 
             <button
               type="submit"
-              disabled={otp.length !== 6 || isVerifying}
+              disabled={otp.length !== 6}
               className="h-11 flex-1 rounded-xl bg-blue-600 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isVerifying ? "Verifying..." : "Verify OTP"}
+              Verify OTP
             </button>
           </div>
         </form>
@@ -168,10 +184,9 @@ export const OTPVerificationModal = ({
           <button
             type="button"
             onClick={handleResend}
-            disabled={isVerifying}
-            className="mt-4 w-full text-sm font-semibold text-blue-700 hover:text-blue-800 disabled:opacity-50"
+            className="mt-4 w-full text-sm font-semibold text-blue-700 hover:text-blue-800"
           >
-            Resend demo OTP
+            Resend OTP
           </button>
         )}
 

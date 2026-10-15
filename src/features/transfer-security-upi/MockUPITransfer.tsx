@@ -2,6 +2,7 @@
  * ============================================================================
  * COMPONENT: MockUPITransfer.tsx
  * DESCRIPTION: Standalone demo screen for a simulated UPI transfer.
+ * ----------------------------------------------------------------------------
  * FEATURE OWNER: R05 - Ramya N
  * EMAIL: ramyan.s1814009@gmail.com
  * ROLE: Transfer security & mock UPI owner
@@ -9,16 +10,20 @@
  * SPRINT DELIVERABLES: S1-16, S1-17, S1-18, S1-19, S2-18, S2-19, S2-20
  * ============================================================================
  */
-
 import { useState, type FormEvent } from "react";
 import OTPStateHandlers, { type TransferMethod } from "./OTPStateHandlers";
+import type { TransactionStatus } from "./TransactionResult";
 
 export const MockUPITransfer = () => {
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState("");
-  const [sourceAccount, setSourceAccount] = useState("NeoBank Savings •••• 4821");
+  const [sourceAccount, setSourceAccount] = useState(
+    "NeoBank Savings •••• 4821",
+  );
   const [note, setNote] = useState("");
   const [method, setMethod] = useState<TransferMethod>("UPI");
+  const [simulationOutcome, setSimulationOutcome] =
+    useState<TransactionStatus>("SUCCESS");
   const [started, setStarted] = useState(false);
   const [formError, setFormError] = useState("");
 
@@ -32,6 +37,11 @@ export const MockUPITransfer = () => {
       return;
     }
 
+    if (!sourceAccount.trim()) {
+      setFormError("Enter a source account.");
+      return;
+    }
+
     if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
       setFormError("Enter an amount greater than zero.");
       return;
@@ -39,6 +49,10 @@ export const MockUPITransfer = () => {
 
     setFormError("");
     setStarted(true);
+  };
+
+  const returnToTransferForm = () => {
+    setStarted(false);
   };
 
   if (started) {
@@ -49,22 +63,25 @@ export const MockUPITransfer = () => {
             Transfer security demo
           </h1>
           <p className="mt-1 text-sm text-slate-500">
-            Follow the confirmation and verification steps to see the result.
+            Review the transfer, complete the demo verification, and view the
+            simulated result.
           </p>
         </div>
 
         <OTPStateHandlers
-          recipient={recipient}
+          recipient={recipient.trim()}
           amount={Number(amount)}
-          sourceAccount={sourceAccount}
-          note={note}
+          sourceAccount={sourceAccount.trim()}
+          note={note.trim()}
           method={method}
-          onCancel={() => setStarted(false)}
+          simulatedOutcome={simulationOutcome}
+          onCancel={returnToTransferForm}
+          onNewTransfer={returnToTransferForm}
         />
 
         <button
           type="button"
-          onClick={() => setStarted(false)}
+          onClick={returnToTransferForm}
           className="mt-5 text-sm font-semibold text-blue-700 hover:text-blue-800"
         >
           ← Back to transfer form
@@ -77,24 +94,31 @@ export const MockUPITransfer = () => {
     <main className="mx-auto w-full max-w-2xl p-4 sm:p-6">
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="mb-6">
-          <p className="text-sm font-semibold text-blue-700">NEOBANK · DEMO</p>
+          <p className="text-sm font-semibold text-blue-700">
+            NEOBANK · SIMULATION ONLY
+          </p>
           <h1 className="mt-1 text-2xl font-bold text-slate-900">
             Make a transfer
           </h1>
           <p className="mt-2 text-sm text-slate-500">
-            Enter sample details to test the R05 security workflow.
+            Use sample details to test the R05 transfer-security workflow.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label htmlFor="demo-method" className="mb-2 block text-sm font-semibold text-slate-700">
+            <label
+              htmlFor="demo-method"
+              className="mb-2 block text-sm font-semibold text-slate-700"
+            >
               Transfer method
             </label>
             <select
               id="demo-method"
               value={method}
-              onChange={(event) => setMethod(event.target.value as TransferMethod)}
+              onChange={(event) =>
+                setMethod(event.target.value as TransferMethod)
+              }
               className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3"
             >
               <option value="UPI">UPI transfer (PIN + OTP)</option>
@@ -104,7 +128,10 @@ export const MockUPITransfer = () => {
           </div>
 
           <div>
-            <label htmlFor="demo-source" className="mb-2 block text-sm font-semibold text-slate-700">
+            <label
+              htmlFor="demo-source"
+              className="mb-2 block text-sm font-semibold text-slate-700"
+            >
               Source account
             </label>
             <input
@@ -117,7 +144,10 @@ export const MockUPITransfer = () => {
           </div>
 
           <div>
-            <label htmlFor="demo-recipient" className="mb-2 block text-sm font-semibold text-slate-700">
+            <label
+              htmlFor="demo-recipient"
+              className="mb-2 block text-sm font-semibold text-slate-700"
+            >
               Recipient / UPI ID
             </label>
             <input
@@ -131,13 +161,16 @@ export const MockUPITransfer = () => {
           </div>
 
           <div>
-            <label htmlFor="demo-amount" className="mb-2 block text-sm font-semibold text-slate-700">
+            <label
+              htmlFor="demo-amount"
+              className="mb-2 block text-sm font-semibold text-slate-700"
+            >
               Amount (INR)
             </label>
             <input
               id="demo-amount"
               type="number"
-              min="1"
+              min="0.01"
               step="0.01"
               value={amount}
               onChange={(event) => setAmount(event.target.value)}
@@ -148,7 +181,10 @@ export const MockUPITransfer = () => {
           </div>
 
           <div>
-            <label htmlFor="demo-note" className="mb-2 block text-sm font-semibold text-slate-700">
+            <label
+              htmlFor="demo-note"
+              className="mb-2 block text-sm font-semibold text-slate-700"
+            >
               Note (optional)
             </label>
             <textarea
@@ -161,8 +197,44 @@ export const MockUPITransfer = () => {
             />
           </div>
 
+          <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
+            <label
+              htmlFor="demo-outcome"
+              className="mb-2 block text-sm font-semibold text-slate-800"
+            >
+              Demo result scenario
+            </label>
+            <select
+              id="demo-outcome"
+              value={simulationOutcome}
+              onChange={(event) =>
+                setSimulationOutcome(
+                  event.target.value as TransactionStatus,
+                )
+              }
+              className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3"
+            >
+              <option value="SUCCESS">
+                Success — simulated transfer succeeds
+              </option>
+              <option value="FAILED">
+                Failure — simulated transfer fails
+              </option>
+              <option value="HELD">
+                On hold — security check holds transfer
+              </option>
+            </select>
+            <p className="mt-2 text-xs leading-5 text-slate-600">
+              Test setting only. This selection controls the demo result and
+              does not initiate a real transaction.
+            </p>
+          </div>
+
           {formError && (
-            <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
+            <p
+              role="alert"
+              className="rounded-lg bg-red-50 p-3 text-sm text-red-700"
+            >
               {formError}
             </p>
           )}
@@ -176,7 +248,9 @@ export const MockUPITransfer = () => {
         </form>
 
         <p className="mt-5 rounded-lg bg-amber-50 p-3 text-xs leading-5 text-amber-800">
-          Demo environment only. Never enter a real banking PIN or OTP.
+          Demo environment only. Never enter a real banking PIN or OTP. The
+          verification values shown in this application are test values only.
+          No money will be transferred.
         </p>
       </section>
     </main>

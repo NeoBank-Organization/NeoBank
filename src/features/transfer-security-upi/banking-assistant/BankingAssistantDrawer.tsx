@@ -1,24 +1,16 @@
 /**
  * ============================================================================
  * COMPONENT: BankingAssistantDrawer.tsx
- * DESCRIPTION: BNK-AI-05: Read-only AI Banking Assistant sliding drawer widget.
+ * DESCRIPTION: BNK-AI-05: Read-only AI Banking Assistant sliding drawer.
  * ----------------------------------------------------------------------------
  * FEATURE OWNER: R05 - Ramya N
- * EMAIL: ramyan.s1814009@gmail.com
- * ROLE: Transfer security & mock UPI owner
- * PRD REQUIREMENTS: BNK-FR-03 (Transfer Security/OTP/UPI), BNK-AI-05 (Banking Assistant)
- * SPRINT DELIVERABLES: Sprint 1 (S1-16, S1-17, S1-18, S1-19) & Sprint 2 (S2-18, S2-19, S2-20)
- * PRIMARY RESPONSIBILITIES: Mock UPI, confirmation dialog, OTP modal/states, transaction result, banking assistant AI
+ * PRD REQUIREMENTS: BNK-AI-05
+ * SPRINT DELIVERABLES: S2-18, S2-19, S2-20
  * ============================================================================
  */
 
-
 import React, { useEffect } from "react";
-import {
-  Bot,
-  ShieldCheck,
-  X,
-} from "lucide-react";
+import { Bot, ShieldCheck, X } from "lucide-react";
 
 import { AssistantChatWindow } from "./AssistantChatWindow";
 
@@ -103,14 +95,15 @@ export const BankingAssistantDrawer: React.FC<
           />
 
           <p className="text-[10px] leading-4 text-blue-900">
-            General guidance only. The assistant cannot move money,
-            approve fraud holds, or bypass transaction verification.
+            General guidance only. The assistant cannot move money, approve
+            fraud holds, or bypass transaction verification.
           </p>
         </div>
 
-        <AssistantChatWindow />
+        <AssistantChatWindow onClose={onClose} />
       </aside>
     </div>
   );
 };
 
+export default BankingAssistantDrawer;
